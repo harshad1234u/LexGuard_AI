@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,500;0,600;0,700;1,500;1,600&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {"darkMode":"class","theme":{"extend":{"colors":{"on-primary-container":"#7c839b","surface-dim":"#cbdbf5","on-tertiary-fixed":"#002114","on-primary-fixed":"#131b2e","error-container":"#ffdad6","surface-container-highest":"#d3e4fe","on-error":"#ffffff","on-error-container":"#93000a","background":"#f8f9ff","on-primary":"#ffffff","surface-tint":"#565e74","outline-variant":"#c6c6cd","inverse-primary":"#bec6e0","tertiary":"#000000","inverse-on-surface":"#eaf1ff","on-surface":"#0b1c30","secondary-container":"#316bf3","on-tertiary-fixed-variant":"#005137","error":"#ba1a1a","tertiary-container":"#002114","on-tertiary":"#ffffff","inverse-surface":"#213145","on-background":"#0b1c30","on-secondary-fixed":"#00174b","surface-container-high":"#dce9ff","on-tertiary-container":"#069669","surface-variant":"#d3e4fe","on-secondary-container":"#fefcff","secondary-fixed-dim":"#b4c5ff","primary-fixed":"#dae2fd","on-secondary-fixed-variant":"#003ea8","surface-container-lowest":"#ffffff","on-surface-variant":"#45464d","primary-container":"#131b2e","primary":"#000000","surface-container-low":"#eff4ff","tertiary-fixed":"#85f8c4","secondary-fixed":"#dbe1ff","outline":"#76777d","secondary":"#0051d5","surface":"#f8f9ff","tertiary-fixed-dim":"#68dba9","on-secondary":"#ffffff","primary-fixed-dim":"#bec6e0","on-primary-fixed-variant":"#3f465c","surface-container":"#e5eeff","surface-bright":"#f8f9ff"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"gutter-lg":"2rem","space-lg":"1.5rem","gutter-sm":"1rem","space-md":"1rem","space-sm":"0.5rem","margin-sm":"1rem","margin-lg":"2.5rem","gutter":"1.5rem","space-xl":"2.5rem","space-xs":"0.25rem","margin":"1.5rem"},"fontFamily":{"body-md":["Inter"],"body-lg":["Inter"],"headline-sm":["Hanken Grotesk"],"label-sm":["Inter"],"headline-md":["Hanken Grotesk"],"body-sm":["Inter"],"headline-xl-mobile":["Hanken Grotesk"],"headline-xl":["Hanken Grotesk"],"citation-badge":["JetBrains Mono"],"headline-lg":["Hanken Grotesk"],"citation-code":["JetBrains Mono"],"display-lg":["Hanken Grotesk"],"label-md":["Inter"]},"fontSize":{"body-md":["14px",{"lineHeight":"22px","fontWeight":"400"}],"body-lg":["16px",{"lineHeight":"26px","fontWeight":"400"}],"headline-sm":["16px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"600"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"600"}],"headline-md":["20px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-xl-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-xl":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"600"}],"citation-badge":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"600"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}],"citation-code":["12px",{"lineHeight":"16px","letterSpacing":"-0.01em","fontWeight":"500"}],"display-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.025em","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.01em","fontWeight":"500"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-28 w-full px-gutter flex flex-col justify-between"><div class="h-16 flex items-center justify-between gap-gutter"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm"><img alt="LexGuard AI Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UrSEUZ3OBvCQ1VhllYFVRGY1OF9ERZUJvZw0rnm6KrN9sufl5c7N-8fUDKSxQT7FstaHbjxraAvbTLhK1UgeaeUyZLOOJ-Bm0RbhAiap1z0mUJPx121KiJwatM4GHzXb5sFT9NY7DaWkWT8RobsvDzPCCc3TETiPou9eQ6kfF3UPN021GkDlNevkcd8WsOW8ZUX11wH1Ze8lFnMJBsOk-AhQeTq-8QrcZM4guqgVX7t-CQx4AbmFQK9GI"/><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-bold">LexGuard<span class="text-secondary ml-space-xs font-semibold">AI</span></span></div><div class="h-5 w-[1px] bg-outline-variant/40 hidden sm:block"></div><div class="hidden md:flex items-center gap-space-sm bg-surface-container-low px-space-sm py-1 rounded-xl"><span class="material-symbols-outlined text-[16px] text-error">description</span><span class="font-citation-code text-citation-code text-on-surface font-semibold max-w-[210px] truncate">Employment_Agreement_2025_Final.pdf</span><span class="font-citation-badge text-citation-badge text-outline">(14 pgs)</span><div class="flex items-center gap-1 bg-surface-container-lowest text-on-tertiary-container px-space-xs py-0.5 rounded shadow-[0_1px_2px_rgba(0,0,0,0.03)]"><span class="material-symbols-outlined text-[13px] text-on-tertiary-container">verified</span><span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">Verified</span></div></div></div><div class="hidden xl:flex items-center gap-space-md text-outline font-label-md text-label-md"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[15px] text-secondary">pie_chart</span><span>Coverage: <strong class="text-on-surface font-semibold">100% (14/14)</strong></span></div><span class="w-1 h-1 rounded-full bg-outline-variant"></span><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[15px] text-on-tertiary-container">bolt</span><span>Engine: <strong class="text-on-surface font-semibold">Active</strong></span></div><span class="w-1 h-1 rounded-full bg-outline-variant"></span><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[15px] text-secondary">sync_saved_locally</span><span>Mode: <strong class="text-on-surface font-semibold">Deterministic + Semantic</strong></span></div></div><div class="flex items-center gap-space-sm"><button class="hidden lg:flex items-center gap-space-xs px-space-sm py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container hover:text-on-surface text-on-surface-variant font-label-md text-label-md transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">menu_book</span><span>Verification Guide</span></button><div class="flex items-center gap-1 bg-surface-container-high px-space-sm py-1 rounded-full text-on-surface-variant font-label-sm text-label-sm font-semibold tracking-wide uppercase"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span><span>Demo Sandbox</span></div><button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-lg transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">settings</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div><div class="h-12 flex items-center justify-between"><nav class="flex items-center gap-gutter h-full" data-active-classes="text-secondary border-b-2 border-secondary font-semibold bg-transparent"><a class="h-full flex items-center font-headline-sm text-headline-sm text-on-surface-variant hover:text-on-surface transition-colors pb-0.5" data-path="overview-and-metrics" href="#">Overview &amp; Metrics</a><a class="h-full flex items-center gap-space-xs font-headline-sm text-headline-sm text-on-surface-variant hover:text-on-surface transition-colors pb-0.5" data-path="findings-and-clauses" href="#"><span>Findings &amp; Clauses</span><span class="px-1.5 py-0.2 rounded-full bg-surface-container-high text-on-surface font-citation-badge text-citation-badge">12</span></a><a class="h-full flex items-center gap-space-xs font-headline-sm text-headline-sm text-on-surface-variant hover:text-on-surface transition-colors pb-0.5" data-path="values-and-dates" href="#"><span>Values &amp; Dates</span><span class="px-1.5 py-0.2 rounded-full bg-surface-container-high text-on-surface font-citation-badge text-citation-badge">8</span></a><a aria-current="page" class="h-full flex items-center transition-colors pb-0.5 text-secondary border-b-2 border-secondary font-semibold bg-transparent" data-path="ask-document" href="#">Ask Document</a><a class="h-full flex items-center font-headline-sm text-headline-sm text-on-surface-variant hover:text-on-surface transition-colors pb-0.5" data-path="upload-new-document" href="#">Upload New Document</a></nav><div class="hidden sm:flex items-center gap-space-xs text-outline font-citation-code text-citation-code"><span class="material-symbols-outlined text-[14px]">gavel</span><span>LexGuard Audit Protocol v4.2</span></div></div></div></header><main class="w-full pt-28 flex-1 bg-background"><div class="flex flex-col w-full">
+<!-- Interactive Top Action & Meta Ribbon -->
+<section class="w-full bg-surface-container-lowest px-gutter py-space-lg shadow-sm">
+<div class="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs max-w-3xl">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded bg-secondary-container/10 text-secondary font-citation-badge text-citation-badge uppercase tracking-wider font-semibold">
+<span class="material-symbols-outlined text-[14px]">fact_check</span>
+            Grounding Protocol v4.2
+          </span>
+<span class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded bg-on-tertiary-container/10 text-on-tertiary-container font-citation-badge text-citation-badge font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container animate-pulse"></span>
+            Strict Verification Mode: On
+          </span>
+<span class="inline-flex items-center gap-1 px-space-sm py-1 rounded bg-surface-container font-citation-badge text-citation-badge text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] text-secondary">security</span>
+            Safety Gate: Active
+          </span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight mt-1">Ask Document — Evidence-Grounded Q&amp;A</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Responses are generated strictly from the primary text of <strong class="text-on-surface font-semibold">Employment_Agreement_2025_Final.pdf</strong> with verified string-level citations. Claims lacking unambiguous documentary evidence are suppressed by design.
+        </p>
+</div>
+<!-- Live Confidence Meter & Audit Widget -->
+<div class="flex items-center gap-space-lg bg-surface-container-low px-space-lg py-space-md rounded-xl self-start lg:self-center shadow-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Hallucination Index</span>
+<div class="flex items-baseline gap-1.5 mt-0.5">
+<span class="font-headline-lg text-headline-lg font-bold text-on-tertiary-container">0.00%</span>
+<span class="font-citation-badge text-citation-badge text-on-tertiary-container font-semibold">Guaranteed</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline-variant mt-0.5">Deterministic String Matching</span>
+</div>
+<div class="w-px h-10 bg-outline-variant/30"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Indexed Corpus</span>
+<div class="flex items-baseline gap-1.5 mt-0.5">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">14/14</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Pages</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">68 Subsections Indexed</span>
+</div>
+</div>
+</div>
+<!-- Quick Query Prompts Carousel -->
+<div class="max-w-7xl mx-auto mt-space-lg pt-space-md">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px] text-secondary">tips_and_updates</span>
+<span>Recommended Inquiries for this Contract</span>
+</div>
+<span class="font-citation-badge text-citation-badge text-outline">Click prompt to populate stream</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm" id="prompt-container">
+<button class="group text-left p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all flex flex-col justify-between gap-space-sm shadow-sm" onclick="populatePrompt(this)" type="button">
+<div class="flex items-start justify-between gap-2">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-secondary transition-colors">"What are my termination notice obligations?"</span>
+<span class="material-symbols-outlined text-outline group-hover:text-secondary text-[18px] transition-transform group-hover:translate-x-0.5">pixel_4_4xl_4a_5_5a_5g</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline font-citation-badge text-citation-badge">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Target: Sec. 7.2 (Page 10)</span>
+</div>
+</button>
+<button class="group text-left p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all flex flex-col justify-between gap-space-sm shadow-sm" onclick="populatePrompt(this)" type="button">
+<div class="flex items-start justify-between gap-2">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-secondary transition-colors">"Is there a non-compete clause, and what is its geographic scope?"</span>
+<span class="material-symbols-outlined text-outline group-hover:text-secondary text-[18px] transition-transform group-hover:translate-x-0.5">pixel_4_4xl_4a_5_5a_5g</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline font-citation-badge text-citation-badge">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Target: Sec. 9.1 (Page 12)</span>
+</div>
+</button>
+<button class="group text-left p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all flex flex-col justify-between gap-space-sm shadow-sm" onclick="populatePrompt(this)" type="button">
+<div class="flex items-start justify-between gap-2">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-secondary transition-colors">"What happens to my unvested equity if the company is sold?"</span>
+<span class="material-symbols-outlined text-outline group-hover:text-secondary text-[18px] transition-transform group-hover:translate-x-0.5">pixel_4_4xl_4a_5_5a_5g</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline font-citation-badge text-citation-badge">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Target: Sec. 4.3 (Page 5)</span>
+</div>
+</button>
+<button class="group text-left p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all flex flex-col justify-between gap-space-sm shadow-sm" onclick="populatePrompt(this)" type="button">
+<div class="flex items-start justify-between gap-2">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface group-hover:text-secondary transition-colors">"What is the severance package if I am laid off without cause?"</span>
+<span class="material-symbols-outlined text-outline group-hover:text-secondary text-[18px] transition-transform group-hover:translate-x-0.5">pixel_4_4xl_4a_5_5a_5g</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline font-citation-badge text-citation-badge">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Target: Sec. 8.1 (Page 11)</span>
+</div>
+</button>
+</div>
+</div>
+</section>
+<!-- Main Q&A Inspection Canvas (Two-Column Editorial Stream) -->
+<section class="w-full px-gutter py-space-xl max-w-7xl mx-auto flex-1">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Conversation Column (Left / Main 8 cols) -->
+<div class="lg:col-span-8 flex flex-col gap-space-xl" id="conversation-stream">
+<!-- TURN 1: Strictly Verified Grounded Case -->
+<article class="flex flex-col gap-space-md">
+<!-- User Prompt Bubble -->
+<div class="flex items-start justify-end gap-space-sm self-end max-w-2xl">
+<div class="bg-primary text-on-primary px-space-lg py-space-md rounded-2xl rounded-tr-sm shadow-sm">
+<p class="font-body-md text-body-md font-medium">What is the required notice period if I decide to resign?</p>
+<div class="flex items-center justify-end gap-2 mt-1 text-on-primary-container font-citation-badge text-citation-badge">
+<span>User Session • 10:42 AM</span>
+</div>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[16px]">person</span>
+</div>
+</div>
+<!-- AI Evidence-Backed Response Card -->
+<div class="flex items-start gap-space-md">
+<div class="w-9 h-9 rounded-xl bg-secondary text-on-secondary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+</div>
+<div class="flex-1 flex flex-col bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm">
+<!-- Evidence Header Ribbon -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pb-space-md bg-surface-container-low/50 -mx-space-lg -mt-space-lg px-space-lg pt-space-md rounded-t-2xl">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded bg-on-tertiary-container/15 text-on-tertiary-container font-citation-badge text-citation-badge font-bold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                    Verified against Page 10, Section 7.2
+                  </span>
+<span class="hidden sm:inline-block font-citation-badge text-citation-badge text-outline">Deterministic Match: 100%</span>
+</div>
+<div class="flex items-center gap-1 font-citation-code text-citation-code text-secondary font-semibold cursor-pointer hover:underline" onclick="previewSource(10, '7.2')">
+<span class="material-symbols-outlined text-[15px]">menu_book</span>
+<span>Inspect Original Scan</span>
+</div>
+</div>
+<!-- Plain-Language Synthesized Answer -->
+<div class="mt-space-md font-body-lg text-body-lg text-on-surface leading-relaxed">
+                Under <strong class="font-semibold text-on-surface">Section 7.2</strong> of the agreement, you are required to provide at least <strong class="text-secondary font-semibold">sixty (60) calendar days</strong> prior written notice to the company for a voluntary resignation without “Good Reason”. During this notice period, the company explicitly reserves the right to accelerate your termination date while paying your full base salary through the end of the 60-day notice window.
+              </div>
+<!-- Verbatim Extracted Evidence Box with Monospace Line Indexing -->
+<div class="mt-space-md bg-surface-container-low p-space-md rounded-xl flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-outline font-citation-badge text-citation-badge">
+<span class="uppercase tracking-wider flex items-center gap-1 text-on-surface-variant font-semibold">
+<span class="material-symbols-outlined text-[14px] text-secondary">format_quote</span>
+                    Verbatim Document Extract (Primary Evidence)
+                  </span>
+<span class="bg-surface-container-highest px-2 py-0.5 rounded text-on-surface font-semibold">Page 10 • Lines 24–29</span>
+</div>
+<div class="font-citation-code text-citation-code text-on-surface bg-surface-container-lowest p-space-sm rounded-lg flex flex-col gap-1 overflow-x-auto leading-5">
+<div class="flex gap-space-md text-outline">
+<span class="select-none text-outline-variant w-6 text-right">L24</span>
+<span class="text-on-surface"><mark class="bg-secondary-fixed/50 text-on-surface rounded px-0.5">7.2 Voluntary Termination.</mark> Employee may terminate employment at any time upon</span>
+</div>
+<div class="flex gap-space-md text-outline">
+<span class="select-none text-outline-variant w-6 text-right">L25</span>
+<span class="text-on-surface"><mark class="bg-secondary-fixed/50 text-on-surface rounded px-0.5">sixty (60) days' prior written notice</mark> to the Board of Directors. During such notice</span>
+</div>
+<div class="flex gap-space-md text-outline">
+<span class="select-none text-outline-variant w-6 text-right">L26</span>
+<span class="text-on-surface">period, Employee shall continue to render services and assist in the orderly transition</span>
+</div>
+<div class="flex gap-space-md text-outline">
+<span class="select-none text-outline-variant w-6 text-right">L27</span>
+<span class="text-on-surface">of duties. The Company may, in its sole discretion, accelerate the effective date of such</span>
+</div>
+<div class="flex gap-space-md text-outline">
+<span class="select-none text-outline-variant w-6 text-right">L28</span>
+<span class="text-on-surface">resignation; provided that Employee shall receive Base Salary through the end of the</span>
+</div>
+<div class="flex gap-space-md text-outline">
+<span class="select-none text-outline-variant w-6 text-right">L29</span>
+<span class="text-on-surface">requisite sixty (60) day period.</span>
+</div>
+</div>
+<!-- Footnote / Action Pills -->
+<div class="flex items-center justify-between pt-1 flex-wrap gap-space-xs text-outline font-label-sm text-label-sm">
+<div class="flex items-center gap-space-sm">
+<span class="text-on-tertiary-container font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">shield_lock</span>
+                      Zero Hallucination Proof
+                    </span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span>Checksum: 0x9AF831B</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="text-on-surface-variant hover:text-on-surface flex items-center gap-1 p-1 rounded hover:bg-surface-container" type="button">
+<span class="material-symbols-outlined text-[16px]">content_copy</span> Copy Citation
+                    </button>
+<button class="text-on-surface-variant hover:text-on-surface flex items-center gap-1 p-1 rounded hover:bg-surface-container" type="button">
+<span class="material-symbols-outlined text-[16px]">bookmark_add</span> Pin finding
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+<!-- TURN 2: Nuanced / Discretionary Caution Case -->
+<article class="flex flex-col gap-space-md">
+<!-- User Prompt Bubble -->
+<div class="flex items-start justify-end gap-space-sm self-end max-w-2xl">
+<div class="bg-primary text-on-primary px-space-lg py-space-md rounded-2xl rounded-tr-sm shadow-sm">
+<p class="font-body-md text-body-md font-medium">Am I entitled to an automatic bonus if the company meets revenue targets?</p>
+<div class="flex items-center justify-end gap-2 mt-1 text-on-primary-container font-citation-badge text-citation-badge">
+<span>User Session • 10:44 AM</span>
+</div>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[16px]">person</span>
+</div>
+</div>
+<!-- AI Evidence-Backed Response Card -->
+<div class="flex items-start gap-space-md">
+<div class="w-9 h-9 rounded-xl bg-secondary text-on-secondary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">balance</span>
+</div>
+<div class="flex-1 flex flex-col bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm">
+<!-- Evidence Header Ribbon: Amber Caution -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pb-space-md bg-surface-container-low/50 -mx-space-lg -mt-space-lg px-space-lg pt-space-md rounded-t-2xl">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded bg-surface-container-high text-on-surface font-citation-badge text-citation-badge font-bold">
+<span class="material-symbols-outlined text-[14px] text-secondary">warning_amber</span>
+                    Partially Supported — Discretionary Condition Found
+                  </span>
+<span class="hidden sm:inline-block font-citation-badge text-citation-badge text-outline">Target: Sec. 3.2</span>
+</div>
+<div class="flex items-center gap-1 font-citation-code text-citation-code text-secondary font-semibold cursor-pointer hover:underline" onclick="previewSource(3, '3.2')">
+<span class="material-symbols-outlined text-[15px]">menu_book</span>
+<span>Inspect Page 3</span>
+</div>
+</div>
+<!-- Synthesized Answer with Legal Risk Highlight -->
+<div class="mt-space-md font-body-lg text-body-lg text-on-surface leading-relaxed">
+<strong class="font-semibold text-error">Not automatically.</strong> While <strong class="font-semibold text-on-surface">Section 3.2</strong> specifies a target annual bonus of <strong class="text-on-surface font-semibold">15% of Base Salary</strong> based on corporate revenue objectives, the payment is explicitly <em class="italic">discretionary</em>. The contract explicitly confers sole and absolute authority upon the Compensation Committee, meaning achieving targets does not create an enforceable entitlement.
+              </div>
+<!-- Verbatim Discretionary Clause -->
+<div class="mt-space-md bg-surface-container-low p-space-md rounded-xl flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-outline font-citation-badge text-citation-badge">
+<span class="uppercase tracking-wider flex items-center gap-1 text-on-surface-variant font-semibold">
+<span class="material-symbols-outlined text-[14px] text-secondary">rule</span>
+                    Verbatim Clause Language
+                  </span>
+<span class="bg-surface-container-highest px-2 py-0.5 rounded text-on-surface font-semibold">Page 3 of 14 • Section 3.2</span>
+</div>
+<div class="font-citation-code text-citation-code text-on-surface bg-surface-container-lowest p-space-sm rounded-lg flex flex-col gap-1 overflow-x-auto leading-5">
+<div class="flex gap-space-md text-outline">
+<span class="select-none text-outline-variant w-6 text-right">L08</span>
+<span class="text-on-surface">3.2 Annual Bonus. Employee shall be eligible to receive an annual performance</span>
+</div>
+<div class="flex gap-space-md text-outline">
+<span class="select-none text-outline-variant w-6 text-right">L09</span>
+<span class="text-on-surface">bonus targeted at fifteen percent (15%) of Base Salary...</span>
+</div>
+<div class="flex gap-space-md text-outline">
+<span class="select-none text-outline-variant w-6 text-right">L10</span>
+<span class="text-on-surface"><mark class="bg-surface-container-high text-on-surface rounded px-0.5">The actual bonus amount, if any, shall be determined in the sole and absolute discretion</mark></span>
+</div>
+<div class="flex gap-space-md text-outline">
+<span class="select-none text-outline-variant w-6 text-right">L11</span>
+<span class="text-on-surface"><mark class="bg-surface-container-high text-on-surface rounded px-0.5">of the Compensation Committee</mark> and the Board of Directors, based upon Company milestones.</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1 text-outline font-label-sm text-label-sm">
+<span class="text-secondary font-semibold">Classification: Non-guaranteed discretionary incentive</span>
+<button class="text-on-surface-variant hover:text-on-surface flex items-center gap-1 p-1 rounded hover:bg-surface-container" type="button">
+<span class="material-symbols-outlined text-[16px]">content_copy</span> Copy Citation
+                  </button>
+</div>
+</div>
+</div>
+</div>
+</article>
+<!-- TURN 3: Safety Gate / Unverified Suppression State -->
+<article class="flex flex-col gap-space-md">
+<!-- User Prompt Bubble -->
+<div class="flex items-start justify-end gap-space-sm self-end max-w-2xl">
+<div class="bg-primary text-on-primary px-space-lg py-space-md rounded-2xl rounded-tr-sm shadow-sm">
+<p class="font-body-md text-body-md font-medium">Does the agreement provide a $50,000 relocation stipend?</p>
+<div class="flex items-center justify-end gap-2 mt-1 text-on-primary-container font-citation-badge text-citation-badge">
+<span>User Session • 10:46 AM</span>
+</div>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[16px]">person</span>
+</div>
+</div>
+<!-- AI Safe Suppression Card -->
+<div class="flex items-start gap-space-md">
+<div class="w-9 h-9 rounded-xl bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">search_off</span>
+</div>
+<div class="flex-1 flex flex-col bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm">
+<!-- Evidence Header Ribbon: Negative Search Proof -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pb-space-md bg-surface-container-low/50 -mx-space-lg -mt-space-lg px-space-lg pt-space-md rounded-t-2xl">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded bg-surface-container-high text-on-surface-variant font-citation-badge text-citation-badge font-bold">
+<span class="material-symbols-outlined text-[14px]">block</span>
+                    Information Not Found in Document
+                  </span>
+<span class="hidden sm:inline-block font-citation-badge text-citation-badge text-outline">Exhaustive Scan: 14 Pages</span>
+</div>
+<span class="font-citation-badge text-citation-badge bg-error-container/20 text-error px-2 py-0.5 rounded font-semibold">Hallucination Suppressed</span>
+</div>
+<!-- Plain-Language Explanation of Absence -->
+<div class="mt-space-md font-body-lg text-body-lg text-on-surface leading-relaxed">
+                I could not find any mention of a relocation stipend, relocation allowance, or moving expenses in the uploaded agreement. 
+                <strong class="font-semibold text-on-surface">Section 3 (Compensation &amp; Benefits)</strong> enumerates your base salary ($185,000), eligibility for discretionary bonus, group medical benefits, and a <strong class="text-on-surface font-semibold">$2,000 one-time remote home-office setup stipend</strong> (Section 3.5), but <span class="text-error font-medium">no relocation compensation is documented</span>.
+              </div>
+<!-- Safety Protocol Notice Box -->
+<div class="mt-space-md bg-surface-container-low p-space-md rounded-xl flex items-start gap-space-md">
+<span class="material-symbols-outlined text-secondary text-[22px] shrink-0 mt-0.5">verified</span>
+<div class="flex flex-col gap-0.5">
+<span class="font-headline-sm text-headline-sm text-on-surface">Strict Grounding Enforced</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    LexGuard AI deliberately suppresses generative extrapolation. In standard AI models, ungrounded terms are frequently fabricated based on industry averages. LexGuard strictly confines its answers to explicit, verifiable provisions.
+                  </p>
+</div>
+</div>
+</div>
+</div>
+</article>
+</div>
+<!-- Evidence Inspection Rail (Right Column / 4 cols) -->
+<aside class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- Live Source Document Peek Card -->
+<div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs font-headline-sm text-headline-sm text-on-surface">
+<span class="material-symbols-outlined text-[20px] text-secondary">menu_book</span>
+<span>Active Inspector</span>
+</div>
+<span class="font-citation-badge text-citation-badge px-2 py-0.5 rounded bg-surface-container text-on-surface font-semibold" id="active-citation-tag">Page 10, Sec. 7.2</span>
+</div>
+<!-- Document Mini Scrim & Visual Mockup -->
+<div class="relative bg-surface-container-low rounded-xl p-space-md flex flex-col gap-2 overflow-hidden shadow-inner">
+<div class="flex items-center justify-between text-outline font-citation-badge text-citation-badge pb-1">
+<span>PDF VIEWPORT (BATES 00010)</span>
+<span class="text-on-surface-variant">Scale: 100%</span>
+</div>
+<!-- Visual Document Canvas Simulation -->
+<div class="bg-surface-container-lowest p-4 rounded shadow-sm text-on-surface font-citation-code text-[11px] leading-relaxed flex flex-col gap-2 relative overflow-hidden">
+<div class="w-2/3 h-2 bg-outline-variant/30 rounded"></div>
+<div class="w-full h-1.5 bg-outline-variant/20 rounded"></div>
+<div class="w-5/6 h-1.5 bg-outline-variant/20 rounded"></div>
+<!-- Active Highlighted Clause Simulation -->
+<div class="bg-secondary-fixed/50 p-2 rounded text-on-secondary-fixed font-semibold">
+<span class="block text-[10px] text-secondary font-bold uppercase tracking-wider mb-0.5">Matched Section 7.2</span>
+                "Employee may terminate employment at any time upon sixty (60) days' prior written notice to the Board..."
+              </div>
+<div class="w-full h-1.5 bg-outline-variant/20 rounded"></div>
+<div class="w-4/5 h-1.5 bg-outline-variant/20 rounded"></div>
+<div class="w-3/4 h-1.5 bg-outline-variant/20 rounded"></div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<button class="text-secondary font-label-md text-label-md font-semibold flex items-center gap-1 hover:underline" type="button">
+<span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                Open Full Document Viewer
+              </button>
+<span class="font-citation-badge text-citation-badge text-outline">OCR Conf: 99.8%</span>
+</div>
+</div>
+</div>
+<!-- Citation Verification Matrix -->
+<div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center gap-space-xs font-headline-sm text-headline-sm text-on-surface">
+<span class="material-symbols-outlined text-[20px] text-secondary">checklist_rtl</span>
+<span>Query Grounding Log</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Notice Period Clause</span>
+<span class="font-citation-badge text-citation-badge text-outline">Sec. 7.2 (P.10)</span>
+</div>
+<span class="inline-flex items-center gap-1 text-on-tertiary-container font-citation-badge text-citation-badge font-bold">
+<span class="material-symbols-outlined text-[14px]">check</span> Verbatim
+              </span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Bonus Obligation Check</span>
+<span class="font-citation-badge text-citation-badge text-outline">Sec. 3.2 (P.3)</span>
+</div>
+<span class="inline-flex items-center gap-1 text-secondary font-citation-badge text-citation-badge font-bold">
+<span class="material-symbols-outlined text-[14px]">info</span> Qualified
+              </span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Relocation Stipend Check</span>
+<span class="font-citation-badge text-citation-badge text-outline">Corpus Scan (All Pgs)</span>
+</div>
+<span class="inline-flex items-center gap-1 text-error font-citation-badge text-citation-badge font-bold">
+<span class="material-symbols-outlined text-[14px]">not_interested</span> Negative
+              </span>
+</div>
+</div>
+<!-- Editorial Guardrail Explanation -->
+<div class="bg-surface-container p-space-md rounded-xl mt-space-xs">
+<div class="flex items-center gap-1.5 text-on-surface font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">verified</span>
+<span>Evidentiary Guarantee</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+              LexGuard verifies mathematical n-gram overlaps between its generated response and the raw contract text before streaming. Any assertion scoring below 0.94 token alignment triggers automatic suppression.
+            </p>
+</div>
+</div>
+<!-- Document Metadata Card -->
+<div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col gap-space-sm">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Document Manifest</span>
+<div class="flex flex-col gap-1.5 font-citation-code text-citation-code text-on-surface-variant">
+<div class="flex justify-between">
+<span>SHA-256:</span>
+<span class="text-on-surface font-semibold truncate max-w-[140px]">4a9e...f012</span>
+</div>
+<div class="flex justify-between">
+<span>Jurisdiction:</span>
+<span class="text-on-surface font-semibold">Delaware, USA</span>
+</div>
+<div class="flex justify-between">
+<span>Signed Date:</span>
+<span class="text-on-surface font-semibold">Jan 14, 2025</span>
+</div>
+<div class="flex justify-between">
+<span>Parties:</span>
+<span class="text-on-surface font-semibold">Acme Labs &amp; Jane Doe</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</section>
+<!-- Sticky Bottom Query Input Dock -->
+<div class="sticky bottom-0 z-40 w-full bg-surface-container-lowest/95 backdrop-blur-md shadow-lg py-space-md px-gutter">
+<div class="max-w-4xl mx-auto flex flex-col gap-space-xs">
+<!-- Input Box Container -->
+<form class="relative flex items-center bg-surface-container-low rounded-2xl p-space-xs shadow-sm transition-all focus-within:bg-surface-container-lowest focus-within:shadow-md" id="query-form" onsubmit="handleQuerySubmit(event)">
+<div class="pl-space-md flex items-center text-outline">
+<span class="material-symbols-outlined text-[22px]">psychology</span>
+</div>
+<input autocomplete="off" class="w-full bg-transparent px-space-md py-3 font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none" id="query-input" placeholder="Ask any question about obligations, deadlines, restrictions, or payment terms..." type="text"/>
+<!-- Right Tool Controls -->
+<div class="flex items-center gap-space-xs pr-space-xs shrink-0">
+<button class="hidden sm:flex items-center gap-1 px-space-sm py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm font-semibold transition-colors" title="Attach specific clause reference" type="button">
+<span class="material-symbols-outlined text-[16px]">attachment</span>
+<span>Sec #</span>
+</button>
+<button class="p-2 text-outline hover:text-on-surface rounded-lg hover:bg-surface-container transition-colors" onclick="clearThread()" title="Clear inquiry thread" type="button">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+</button>
+<button class="bg-primary hover:bg-on-surface-variant text-on-primary px-space-md py-2.5 rounded-xl font-label-md text-label-md font-semibold flex items-center gap-space-xs transition-colors shadow-sm" type="submit">
+<span>Query</span>
+<span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+</button>
+</div>
+</form>
+<!-- Persistent Mini Safety & Scope Disclaimer -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-xs px-space-sm text-outline font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-secondary">verified_user</span>
+<span>LexGuard AI provides document grounding and plain-language assistance. Not legal advice.</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-citation-badge text-citation-badge">Press <strong class="text-on-surface font-semibold">Enter ↵</strong> to send</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="text-on-tertiary-container font-semibold">Zero-Data Retention</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function populatePrompt(element) {
+    const promptText = element.querySelector('span.font-body-sm').textContent.replace(/"/g, '');
+    const input = document.getElementById('query-input');
+    input.value = promptText;
+    input.focus();
+  }
+
+  function previewSource(page, section) {
+    const citationTag = document.getElementById('active-citation-tag');
+    if (citationTag) {
+      citationTag.textContent = `Page ${page}, Sec. ${section}`;
+      citationTag.classList.add('bg-secondary', 'text-on-secondary');
+      setTimeout(() => {
+        citationTag.classList.remove('bg-secondary', 'text-on-secondary');
+      }, 1000);
+    }
+  }
+
+  function handleQuerySubmit(event) {
+    event.preventDefault();
+    const input = document.getElementById('query-input');
+    const query = input.value.trim();
+    if (!query) return;
+
+    const stream = document.getElementById('conversation-stream');
+    
+    // Append new user message
+    const userTurn = document.createElement('article');
+    userTurn.className = 'flex flex-col gap-space-md';
+    userTurn.innerHTML = `
+      <div class="flex items-start justify-end gap-space-sm self-end max-w-2xl">
+        <div class="bg-primary text-on-primary px-space-lg py-space-md rounded-2xl rounded-tr-sm shadow-sm">
+          <p class="font-body-md text-body-md font-medium">${escapeHTML(query)}</p>
+          <div class="flex items-center justify-end gap-2 mt-1 text-on-primary-container font-citation-badge text-citation-badge">
+            <span>Just Now</span>
+          </div>
+        </div>
+        <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[16px]">person</span>
+        </div>
+      </div>
+      
+      <div class="flex items-start gap-space-md">
+        <div class="w-9 h-9 rounded-xl bg-secondary text-on-secondary flex items-center justify-center shrink-0 shadow-sm animate-pulse">
+          <span class="material-symbols-outlined text-[20px]">hourglass_top</span>
+        </div>
+        <div class="flex-1 flex flex-col bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm">
+          <div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+            <span class="material-symbols-outlined text-[16px] animate-spin text-secondary">sync</span>
+            <span>Running deterministic N-gram grounding against 14 pages...</span>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    stream.appendChild(userTurn);
+    input.value = '';
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  function clearThread() {
+    const input = document.getElementById('query-input');
+    input.value = '';
+    input.focus();
+  }
+
+  function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, 
+      tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[tag] || tag)
+    );
+  }
+</script></main><footer class="w-full bg-surface-container-lowest py-3 px-gutter shadow-[0_-1px_6px_rgba(0,0,0,0.02)]"><div class="w-full flex flex-col md:flex-row items-center justify-between gap-space-xs text-center md:text-left"><div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md"><span class="material-symbols-outlined text-secondary text-[16px]">shield</span><p><strong class="font-semibold text-on-surface">Legal Disclaimer:</strong> LexGuard AI provides document intelligence and independent evidence verification for informational purposes only. It is not a substitute for advice from a qualified legal professional.</p></div><div class="flex items-center gap-space-md text-outline font-label-sm text-label-sm"><span class="hover:text-on-surface transition-colors cursor-pointer">SOC-2 Type II Certified</span><span class="w-1 h-1 rounded-full bg-outline-variant"></span><span class="hover:text-on-surface transition-colors cursor-pointer">Deterministic Traceability</span></div></div></footer></body></html>

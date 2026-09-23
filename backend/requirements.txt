@@ -1,0 +1,20 @@
+# --- API layer ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# --- Document layer ---
+PyMuPDF==1.25.1
+
+# --- AI layer (wired in Phase 6/7; declared here so the env is built once) ---
+langchain==0.3.14
+langchain-core==0.3.29
+langchain-nvidia-ai-endpoints==0.3.7
+langgraph==0.2.61
+httpx==0.28.1
+
+# --- Tests ---
+pytest==8.3.4
+pytest-asyncio==0.25.1
