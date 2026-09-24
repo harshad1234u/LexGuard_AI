@@ -426,3 +426,17 @@ All test suites were executed cleanly, confirming zero regressions against the P
 
 ### 17.3 Validation Script Reference
 The complete programmatic validation runner is available at [`backend/run_phase24b_validation.py`](file:///d:/code_placed/promprtwar/backend/run_phase24b_validation.py).
+
+---
+
+## 18. Phase 24A Controlled Alternative Model Addendum
+
+Following operator authorization (`"proceed"`), controlled live validation of `gemini-3-flash-preview` was executed and recorded in [`docs/PHASE_24A_ALTERNATIVE_MODEL_REPORT.md`](file:///d:/code_placed/promprtwar/docs/PHASE_24A_ALTERNATIVE_MODEL_REPORT.md).
+
+* **Configured Model:** `gemini-3-flash-preview`
+* **Validation Script:** [`backend/run_phase24a_validation.py`](file:///d:/code_placed/promprtwar/backend/run_phase24a_validation.py)
+* **Metadata Probe:** HTTP 200 OK.
+* **Minimal & Structured Probes:** Initial generation probes succeeded (2.08s – 18.9s).
+* **Full Multi-Turn Live Execution:** Intercepted Google AI Studio 20 req/day free-tier quota ceiling (HTTP 429) safely as `ModelRateLimitError` (`provider_rate_limited`).
+* **Safety & Invariants:** Zero unverified findings released, zero fallback, all 9 adversarial classes withheld, canary secrets redacted, Supabase strictly isolated (`NullRepository`).
+* **Regression Status:** 1,747 backend tests passed, 46 Playwright tests passed, frontend lint and build clean.
