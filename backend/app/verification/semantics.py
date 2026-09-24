@@ -1283,9 +1283,10 @@ def _content_words(text: str) -> set[str]:
 
 
 #: A definition, as contracts write them: a quoted term followed by a defining
-#: verb. The body runs to the end of the sentence.
+#: verb. The body runs to the end of the sentence. Supports both double and
+#: single quotation marks (including typographic variants mapped by text.py).
 _DEFINITION = re.compile(
-    r'"([^"\n]{2,60})"\s*(?:\([^)]{0,40}\)\s*)?'
+    r'(?:"([^"\n]{2,60})"|\'([^\'\n]{2,60})\')\s*(?:\([^)]{0,40}\)\s*)?'
     r"(?:means|shall mean|has the meaning|have the meaning|is defined as|are defined as)\b"
     r"([^.;\n]{0,300})",
     re.IGNORECASE,
@@ -1316,7 +1317,7 @@ def conflicting_definitions(document_text: str) -> set[str]:
     answer that asserts what such a pointer points at.
 
     The text is normalised before it is scanned, and that line is not
-    cosmetic. `_DEFINITION` delimits a defined term with a straight `"`, and a
+    cosmetic. `_DEFINITION` delimits a defined term with straight `"` or `'`, and a
     contract exported from a word processor carries typographic quotes
     instead - so on the most ordinary input there is, the detector found no
     definitions at all and silently reported no conflicts. Normalising first
@@ -1334,8 +1335,9 @@ def conflicting_definitions(document_text: str) -> set[str]:
 
     bodies: dict[str, list[set[str]]] = {}
     for match in _DEFINITION.finditer(document_text):
-        term = normalize(match.group(1))
-        body = _content_words(match.group(2))
+        raw_term = match.group(1) or match.group(2)
+        term = normalize(raw_term)
+        body = _content_words(match.group(3))
         if not term or not body:
             continue
         bodies.setdefault(term, []).append(body)
@@ -1363,8 +1365,10 @@ def defines_a_contested_term(context: str, contested: set[str]) -> bool:
     """
     if not contested:
         return False
+    context = normalize(context, casefold=False)
     return any(
-        normalize(match.group(1)) in contested for match in _DEFINITION.finditer(context)
+        normalize(match.group(1) or match.group(2)) in contested
+        for match in _DEFINITION.finditer(context)
     )
 
 

@@ -297,3 +297,71 @@ class TestTypographicQuotesAreStillQuotes:
             page=3,
         )
         assert response.status is AnswerStatus.SUPPORTED
+
+
+class TestSingleQuotesAreStillQuotes:
+    """Pre-submission audit: Commonwealth and UK drafting routinely uses single quotes.
+
+    Where definitions use single quotes ('Business Day' or ‘Business Day’),
+    `_DEFINITION` must recognize them so conflicting definitions are not silently missed,
+    while paired delimiters ensure apostrophes within terms (e.g. "Buyer's Representative")
+    do not truncate the capture.
+    """
+
+    SINGLE_STRAIGHT = {
+        1: "1.1 'Business Day' means a day other than a Saturday or Sunday.",
+        2: (
+            "14.2 'Business Day' means any day on which the Bank is open "
+            "for business in Mumbai."
+        ),
+    }
+
+    SINGLE_CURLY = {
+        1: "1.1 ‘Business Day’ means a day other than a Saturday or Sunday.",
+        2: (
+            "14.2 ‘Business Day’ means any day on which the Bank is open "
+            "for business in Mumbai."
+        ),
+    }
+
+    def test_single_straight_quoted_conflict_is_detected(self):
+        assert "business day" in conflicting_definitions(
+            "\n".join(self.SINGLE_STRAIGHT.values())
+        )
+
+    def test_single_curly_quoted_conflict_is_detected(self):
+        assert "business day" in conflicting_definitions(
+            "\n".join(self.SINGLE_CURLY.values())
+        )
+
+    def test_single_quote_mixed_with_double_quote_conflicts(self):
+        text = (
+            '1.1 "Business Day" means a day other than a Saturday or Sunday.\n'
+            "14.2 'Business Day' means any day on which the Bank is open "
+            "for business in Mumbai."
+        )
+        assert "business day" in conflicting_definitions(text)
+
+    def test_apostrophe_in_double_quoted_term_is_not_truncated(self):
+        text = (
+            '1.1 "Buyer\'s Representative" means John Doe of Acme Corp.\n'
+            '14.2 "Buyer\'s Representative" means Jane Smith of Zenith Ltd.'
+        )
+        assert "buyer's representative" in conflicting_definitions(text)
+
+    def test_single_quoted_conflict_refuses_evidence_end_to_end(self):
+        response = ask(
+            self.SINGLE_STRAIGHT,
+            "A Business Day is a day other than a Saturday or Sunday.",
+            "'Business Day' means a day other than a Saturday or Sunday",
+        )
+        assert response.status is AnswerStatus.NOT_FOUND
+
+    def test_single_curly_quoted_conflict_refuses_evidence_end_to_end(self):
+        response = ask(
+            self.SINGLE_CURLY,
+            "A Business Day is a day other than a Saturday or Sunday.",
+            "‘Business Day’ means a day other than a Saturday or Sunday",
+        )
+        assert response.status is AnswerStatus.NOT_FOUND
+
