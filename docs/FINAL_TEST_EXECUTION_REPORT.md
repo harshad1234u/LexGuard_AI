@@ -2,7 +2,7 @@
 
 **Project:** LexGuard AI — Legal Document Intelligence  
 **Branch:** `migration/gemini`  
-**Execution Timestamp:** 2026-09-24 22:38 IST  
+**Execution Timestamp:** 2026-09-24 23:10 IST (re-verified)  
 **Environment:** Windows Server / Python 3.11.9 / Node.js v24.20.0 / Chromium (Playwright 1.63.0)  
 **Overall Status:** **ALL REGRESSION, UNIT, INTEGRATION, BUNDLE, AND E2E SUITES PASSED (0 FAILURES)**
 
@@ -12,7 +12,7 @@
 
 | Test Suite | Framework / Tool | Scope | Total Tests | Passed | Failed | Skipped / Deselected | Duration |
 |---|---|---|---|---|---|---|---|
-| **Backend Unit & Verification** | `pytest` (8.3.4) | Coverage gates, deterministic grounding, semantics, Q&A, findings, release policy, definitions | 1,760 | **1,753** | 0 | 1 skipped, 6 deselected* | 57.36s |
+| **Backend Unit & Verification** | `pytest` (8.3.4) | Coverage gates, deterministic grounding, semantics, Q&A, findings, release policy, definitions | 1,764 | **1,757** | 0 | 1 skipped, 6 deselected* | 62.51s |
 | **Frontend Static Analysis** | `oxlint` | React/TypeScript code quality, safety patterns, syntax hygiene | 50 files | **50 files clean** | 0 | 0 warnings | 19ms |
 | **Frontend Typecheck & Build** | `tsc -b && vite build` | Strict TypeScript types, client bundle compilation, tree-shaking | 58 modules | **Clean build** | 0 | 0 errors | 164ms |
 | **Client Bundle Secret Audit** | `node check-bundle.mjs` | Regex scan of production distribution (`dist/`) for leaked credentials | `dist/` | **0 secrets** | 0 | None | <1s |
@@ -29,7 +29,7 @@
 
 ### 2.1 Backend Pytest Suite
 - **Command:** `backend/.venv/Scripts/python.exe -m pytest --tb=short`
-- **Result:** `1753 passed, 1 skipped, 6 deselected, 6 warnings in 57.36s`
+- **Result:** `1757 passed, 1 skipped, 6 deselected, 6 warnings in 62.51s`
 - **Coverage Breakdown:**
   - `tests/test_coverage_gate.py`: PDF integrity, missing pages, encryption, zero-text detection.
   - `tests/test_text_normalization.py`: Ligatures, typographic quotes, zero-width spaces, soft hyphens.
