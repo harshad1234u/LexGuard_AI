@@ -130,7 +130,7 @@ export function DocumentWorkspace({
           analysis={analysis}
           values={values}
           onExtract={onExtract}
-          onAnalyze={() => void analysis.analyze()}
+          onAnalyze={(language) => void analysis.analyze(language)}
           onGoTo={goTo}
           onInspectFinding={inspectFinding}
         />,

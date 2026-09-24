@@ -92,6 +92,7 @@ reasoning: [`docs/11_PROMPTWARS_ALIGNMENT.md`](docs/11_PROMPTWARS_ALIGNMENT.md).
 | 13 | Cross-domain validation and named-entity role safety | Done |
 | 14 | Independent adversarial validation and security hardening | Done |
 | 15 | Structural safety, end-to-end coverage and release hardening | Done |
+| 23 | Gemini + Nemotron provider roles, reasoning notes, Tamil translations, optional Supabase metadata, deployment prep | Done against stubs; **not verified live** — see [`docs/PHASE_23_REPORT.md`](docs/PHASE_23_REPORT.md) |
 
 **MVP demo-ready with documented limitations.** Not production-ready, not
 legally accurate, and nothing here establishes either — see
@@ -101,6 +102,7 @@ Implemented endpoints:
 
 ```text
 GET    /api/v1/health
+GET    /api/v1/ready
 POST   /api/v1/documents/upload
 POST   /api/v1/documents/{id}/extract
 GET    /api/v1/documents/{id}/manifest
@@ -470,18 +472,32 @@ states the same property as it stood at that phase.
 
 That is a claim about grounding. It is not a claim about law.
 
-## Model provider
+## Model providers (Phase 23)
 
-`backend/app/models/` holds the only code that knows NVIDIA exists.
+`backend/app/models/` holds the only code that knows Google or NVIDIA exist.
+Each responsibility is configured separately, and **nothing falls back**: a
+role calls exactly the provider named for it, or reports itself not configured.
 
-```
-ModelProvider (abstract)
-    -> NemotronProvider   nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
-```
+| Role | Setting | Default | Provider class | Output |
+|---|---|---|---|---|
+| Document analysis | `ANALYSIS_PROVIDER` | `gemini` | `GeminiProvider` (`google-genai`) or `NemotronProvider` | Proposed findings → verifier → release gate |
+| Document Q&A | `QA_PROVIDER` | `gemini` | same choice | Proposed answer → verifier → answer gate |
+| Reasoning notes | `REASONING_PROVIDER` + `REASONING_ENABLED` | `nemotron` | `NemotronProvider` | Notes about how **released** findings relate — labelled *"not independently verified"*, never a finding |
 
-Everything upstream depends on `ModelProvider`, so a second provider is one
-subclass and one line in `get_model_provider()`. There is exactly one provider
-today. The verification layer imports no provider at all - a test asserts this.
+The application — not either model — decides what is verified. Gemini output
+passes the same unchanged verifier and release gate Nemotron's did. Nemotron's
+reasoning stage runs only after the release gate, sees only released findings,
+and cannot change, add or remove one. Every result carries `provenance`
+recording the provider actually called. Configuration, the no-fallback rule
+and deployment are in [`docs/12_DEPLOYMENT.md`](docs/12_DEPLOYMENT.md).
+
+**Tamil:** a reader may ask for Tamil. Claims, quotes and the checked
+explanation or answer stay in the document's language; a Tamil translation is
+*added* beside them, labelled "not independently checked", only when the
+original fully passed and every numeral in the translation appears in the
+evidence. Tamil semantic checks do not exist — see the Phase 23 report.
+
+The verification layer imports no provider at all - a test asserts this.
 
 Model output is a **proposal**. `analyze_document()` returns a `ModelAnalysis`,
 which goes to `verify_finding()` before any of it can be shown as fact.

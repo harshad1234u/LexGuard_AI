@@ -27,11 +27,14 @@ from app.agents.nodes import (
     coverage_gate_node,
     ingest_node,
     output_gate_node,
+    reason_gate_node,
+    reason_node,
     validate_node,
     verify_node,
 )
 from app.agents.state import AnalysisState, has_failed
 from app.models.provider import ModelProvider
+from app.models.reasoning import ReasoningProvider
 
 # Node names, used by the graph and asserted in tests.
 VALIDATE = "validate"
@@ -41,6 +44,8 @@ DOCUMENT_MAP = "document_map"
 MODEL = "model"
 VERIFY = "verify"
 OUTPUT_GATE = "output_gate"
+REASON = "reason"
+REASON_GATE = "reason_gate"
 
 #: The workflow's fixed order. Tests assert the graph matches it.
 NODE_SEQUENCE = [
@@ -52,6 +57,11 @@ NODE_SEQUENCE = [
     VERIFY,
     OUTPUT_GATE,
 ]
+
+#: Phase 23. Runs strictly after the release workflow above has decided, over
+#: what it released. Kept as a separate sequence on purpose: the release
+#: workflow is unchanged, and nothing in this appendix can reach back into it.
+REASONING_SEQUENCE = [REASON, REASON_GATE]
 
 
 def _continue_or_stop(state: AnalysisState, *, next_node: str) -> str:
@@ -71,7 +81,7 @@ def _coverage_route(state: AnalysisState) -> str:
     return DOCUMENT_MAP
 
 
-def build_graph(provider: ModelProvider):
+def build_graph(provider: ModelProvider, reasoning_provider: ReasoningProvider | None = None):
     """Compile the workflow around a provider.
 
     The provider arrives as the `ModelProvider` interface and is bound to the
@@ -87,6 +97,8 @@ def build_graph(provider: ModelProvider):
     graph.add_node(MODEL, partial(analyze_node, provider=provider))
     graph.add_node(VERIFY, verify_node)
     graph.add_node(OUTPUT_GATE, output_gate_node)
+    graph.add_node(REASON, partial(reason_node, reasoning_provider=reasoning_provider))
+    graph.add_node(REASON_GATE, reason_gate_node)
 
     graph.add_edge(START, VALIDATE)
 
@@ -111,6 +123,14 @@ def build_graph(provider: ModelProvider):
         {DOCUMENT_MAP: DOCUMENT_MAP, END: END},
     )
 
-    graph.add_edge(OUTPUT_GATE, END)
+    # Reasoning follows only a successful gate. It never fails the run: its
+    # nodes record their own outcome and always proceed to END.
+    graph.add_conditional_edges(
+        OUTPUT_GATE,
+        partial(_continue_or_stop, next_node=REASON),
+        {REASON: REASON, END: END},
+    )
+    graph.add_edge(REASON, REASON_GATE)
+    graph.add_edge(REASON_GATE, END)
 
     return graph.compile()

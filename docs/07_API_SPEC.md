@@ -628,6 +628,27 @@ silent on something when the service simply never asked.
   quote can only ever be matched against that document.
 - No chat history is kept; each question is answered from the document alone.
 
+## Phase 23 additions (all additive and optional)
+
+- `POST /documents/{id}/analyze` accepts an optional JSON body
+  `{"language": "en" | "ta"}`. No body means English, exactly as before. A
+  different language while an analysis is running is `409 analysis_in_progress`;
+  after completion it starts a new analysis.
+- `AnalysisResult` gains `language`, `provenance` and `reasoning`
+  (`{status: completed|disabled|skipped|unavailable|failed, failure_kind,
+  provider, notes[], withheld_count}`; each note: `id, category, text,
+  finding_ids, quotes, evidence_checked, label`). Notes have **no**
+  verification status.
+- `VerifiedFindingOut` gains `explanation_translation` and
+  `explanation_translation_language` — not independently checked; present only
+  beside a verified explanation.
+- `POST /documents/{id}/ask` accepts `language`; `AskResponse` gains
+  `answer_translation`, `answer_translation_language` and `provenance`.
+- `provenance`: `provider, model, reasoning_provider, reasoning_model,
+  verification_policy_version, status` — names and versions only.
+- `GET /ready`: selected providers, per-role booleans, `persistence_enabled`.
+  Never a key.
+
 ## GET /health
 
 Response:

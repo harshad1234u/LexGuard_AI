@@ -111,6 +111,9 @@ sits outside the seven bullets:
 | Prompt-injection-resistant evidence handling | **Implemented** | Text addressed to the assistant inside a document is refused as evidence, even though it genuinely occurs in the file. |
 | Deterministic value index | **Implemented** | Amounts, percentages, time periods and dates located in the document by the application itself, each bound to its page, with no model involved. It reports what the document *says*, never what it means — a value is not labelled a deadline, obligation or risk. Complements the verified-findings path: a reader can see the figures and periods even when the model proposes no finding about them, and it works when the provider is unavailable. |
 | Single release boundary | **Implemented** | Every field the API publishes — claim, quote, citation, attention, category, explanation — is confirmed, derived by the application, or dropped, in one place no endpoint can route around. (Of these, `attention` is returned but not rendered by the current frontend.) |
+| Tamil reading support (Phase 23) | **Partially implemented** | A labelled Tamil translation added beside checked English explanations and answers, released only when the original fully passed and its numerals match the evidence. Not semantically checked. Tamil polarity/modality semantics are **deferred**; other languages are **explicitly excluded**. |
+| Reasoning notes across released findings (Phase 23) | **Implemented** (not verified by design) | A second model points out how released findings may relate. Labelled "not independently verified", gated for scope, unable to change a finding. It is interpretation to guide reading, not a verified output and not advice. **Not verified live.** |
+| Provider provenance (Phase 23) | **Implemented** | Every result and answer records the provider and model actually used and the release-policy version. |
 | Document overview (grouped navigation) | **Implemented** | Released findings grouped under a closed list of document topics, published on the findings response and rendered as a named landmark region. A strict projection: every claim, quote, page and citation in it is already in `result.findings`, asserted at the endpoint, and a structural test takes the release policy off the path and checks that the overview empties with the rest of the response. It calls no model, repeats no unverified explanation, renders no risk indicator, and states of an empty topic only that nothing was released for it. |
 
 ## 5. Explicitly excluded
@@ -122,10 +125,10 @@ Recorded so that absence is not read as oversight:
 | Legal advice, representation, or recommendations | The product provides information. Advice is outside its competence and outside its claims. |
 | Guaranteed legal correctness | Nothing in this system measures legal correctness. |
 | Automated filing, or communication with courts or lawyers | Out of scope for an informational tool. |
-| A second LLM used to judge the first | Measured and refused: it replaces an auditable rule with an unauditable one (`docs/09_DECISIONS.md`). |
+| A second LLM used to judge the first | Measured and refused: it replaces an auditable rule with an unauditable one (`docs/09_DECISIONS.md`). Phase 23's Nemotron reasoning notes are not this: they run after the release gate and decide nothing. |
 | Vector database / RAG | Not needed for single-document understanding, and it adds retrieval failure modes (ADR-004). |
 | Autonomous multi-agent swarm | The workflow is a fixed state machine; the model chooses nothing about control flow (ADR-002). |
-| Permanent document storage | Ephemeral per-document workspace only (ADR-005). |
+| Permanent document storage | Ephemeral per-document workspace only (ADR-005). Phase 23's optional persistence stores metadata and released findings, never documents or page text. |
 | Fine-tuning | Out of scope. |
 | DOCX upload | The extraction path does not exist, so DOCX is rejected at validation rather than half-supported. |
 | Chat history in Q&A | Earlier turns would be a second source of context the verifier cannot check. |

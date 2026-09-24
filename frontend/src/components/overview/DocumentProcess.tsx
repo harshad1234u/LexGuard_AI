@@ -1,9 +1,12 @@
+import { useState } from 'react'
+
 import type { useAnalysis } from '../../hooks/useAnalysis'
 import { plural } from '../../lib/format'
-import type { StatusResponse, UploadResponse } from '../../types/api'
+import type { LanguageCode, StatusResponse, UploadResponse } from '../../types/api'
 import type { WorkspaceTab } from '../../lib/tabs'
 import { Button } from '../ui/Button'
 import { Icon } from '../ui/Icon'
+import { LanguageSelect } from '../ui/LanguageSelect'
 import { ErrorState, StatusBanner } from '../ui/StatusBanner'
 import { AnalysisProgress } from './AnalysisProgress'
 import { AnalysisStopped } from './AnalysisStopped'
@@ -16,7 +19,7 @@ interface Props {
   extractError: string | null
   analysis: ReturnType<typeof useAnalysis>
   onExtract: () => void
-  onAnalyze: () => void
+  onAnalyze: (language: LanguageCode) => void
   onGoTo: (tab: WorkspaceTab) => void
 }
 
@@ -39,6 +42,7 @@ export function DocumentProcess({
   const extracted = status !== null && status.coverage_status !== 'pending'
   const eligible = status?.analysis_eligible === true
   const { result, running, error } = analysis
+  const [language, setLanguage] = useState<LanguageCode>('en')
 
   return (
     <section
@@ -118,7 +122,13 @@ export function DocumentProcess({
             hidden is a courtesy, not the control. */}
         {extracted && eligible && !result && (
           <>
-            <Button onClick={onAnalyze} disabled={running} className="sm:shrink-0">
+            <LanguageSelect
+              id="analysis-language"
+              value={language}
+              onChange={setLanguage}
+              disabled={running}
+            />
+            <Button onClick={() => onAnalyze(language)} disabled={running} className="sm:shrink-0">
               {running ? (
                 <>
                   <Icon name="loader" className="size-4 animate-spin motion-reduce:animate-none" />

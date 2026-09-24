@@ -6,6 +6,25 @@ Every test here is deterministic and offline: no NVIDIA API calls are made
 
 from __future__ import annotations
 
+import os
+
+# --- Test environment, fixed before the app is imported ----------------------
+# Set in the process environment, which outranks any developer .env file, so a
+# local key or role choice can never change what the suite exercises.
+#
+# The pre-Phase-23 suite was written against Nemotron in both roles, with no
+# reasoning stage and no persistence; that is pinned here so those tests run
+# exactly as written. Phase 23 tests select Gemini, reasoning and persistence
+# explicitly, per test. Keys are blank: no default test reaches a real provider.
+os.environ["ANALYSIS_PROVIDER"] = "nemotron"
+os.environ["QA_PROVIDER"] = "nemotron"
+os.environ["REASONING_PROVIDER"] = "nemotron"
+os.environ["REASONING_ENABLED"] = "false"
+os.environ["GEMINI_MODEL"] = "gemini-test-model"
+os.environ["GEMINI_API_KEY"] = ""
+os.environ["SUPABASE_URL"] = ""
+os.environ["SUPABASE_SERVICE_ROLE_KEY"] = ""
+
 import fitz  # PyMuPDF
 import pytest
 from fastapi.testclient import TestClient
@@ -104,6 +123,7 @@ def no_live_provider(request, monkeypatch):
         return
     # An empty value beats the .env file: environment wins in pydantic-settings.
     monkeypatch.setenv("NVIDIA_API_KEY", "")
+    monkeypatch.setenv("GEMINI_API_KEY", "")
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()

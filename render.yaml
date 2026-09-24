@@ -1,0 +1,49 @@
+# Render blueprint for the LexGuard AI backend (FastAPI + model orchestration).
+#
+# Why not Vercel for this part: an analysis runs for minutes, jobs are tracked
+# in process memory by an in-process runner, and uploads live in a temporary
+# workspace for up to DOCUMENT_TTL_SECONDS. That needs one long-lived process,
+# which a container service provides and a serverless function does not.
+# See docs/12_DEPLOYMENT.md.
+#
+# Secrets are declared with `sync: false`: Render asks for them in its
+# dashboard and they are never written into this file.
+
+services:
+  - type: web
+    name: lexguard-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # Must stay at 1 instance: state is in process memory.
+    numInstances: 1
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: ANALYSIS_PROVIDER
+        value: gemini
+      - key: QA_PROVIDER
+        value: gemini
+      - key: REASONING_PROVIDER
+        value: nemotron
+      - key: REASONING_ENABLED
+        value: "true"
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: NEMOTRON_MODEL
+        value: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
+      - key: ALLOWED_ORIGINS
+        sync: false            # the exact Vercel origin, e.g. https://lexguard.vercel.app
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      # Optional persistence. Leave SUPABASE_URL unset to stay in-memory.
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: PERSISTENCE_HASH_SALT
+        sync: false

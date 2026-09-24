@@ -1,7 +1,7 @@
 import type { useAnalysis } from '../../hooks/useAnalysis'
 import type { ValuesState } from '../../hooks/useValues'
 import type { Phase } from '../../lib/phase'
-import type { StatusResponse, UploadResponse } from '../../types/api'
+import type { LanguageCode, StatusResponse, UploadResponse } from '../../types/api'
 import type { WorkspaceTab } from '../../lib/tabs'
 import { DocumentProcess } from './DocumentProcess'
 import { FindingsByTopic } from './FindingsByTopic'
@@ -21,7 +21,7 @@ interface Props {
   analysis: ReturnType<typeof useAnalysis>
   values: ValuesState
   onExtract: () => void
-  onAnalyze: () => void
+  onAnalyze: (language: LanguageCode) => void
   onGoTo: (tab: WorkspaceTab) => void
   onInspectFinding: (findingId: string) => void
 }

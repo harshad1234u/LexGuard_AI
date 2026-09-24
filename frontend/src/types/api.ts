@@ -124,6 +124,49 @@ export type VerificationStatus =
 
 export type AttentionLevel = 'info' | 'review' | 'high'
 
+/**
+ * A reader's language (Phase 23). Only translations follow it: claims, quotes
+ * and the checked explanation or answer stay in the document's own language.
+ */
+export type LanguageCode = 'en' | 'ta'
+
+/** Which providers produced a result, and which release rules applied. */
+export interface Provenance {
+  provider: string
+  model: string
+  /** Null when reasoning did not run. Always null on answers. */
+  reasoning_provider: string | null
+  reasoning_model: string | null
+  verification_policy_version: string
+  status: string
+}
+
+export type ReasoningStatus = 'completed' | 'disabled' | 'skipped' | 'unavailable' | 'failed'
+
+/**
+ * A model's observation relating released findings. Interpretation, never a
+ * verified fact: there is deliberately no verification status on it.
+ * `evidence_checked` says only that its quotes are real text from the findings
+ * it cites. `label` is set by the backend and is always displayed.
+ */
+export interface ReasoningNoteOut {
+  id: string
+  category: string
+  text: string
+  finding_ids: string[]
+  quotes: string[]
+  evidence_checked: boolean
+  label: string
+}
+
+export interface ReasoningResult {
+  status: ReasoningStatus
+  failure_kind: string | null
+  provider: string | null
+  notes: ReasoningNoteOut[]
+  withheld_count: number
+}
+
 export interface EvidenceRef {
   page: number
   quote: string
@@ -156,6 +199,12 @@ export interface VerifiedFindingOut {
    */
   attention: AttentionLevel
   verification_status: VerificationStatus
+  /**
+   * The explanation in the reader's requested language. NOT independently
+   * checked; present only beside a verified explanation. Always labelled.
+   */
+  explanation_translation?: string | null
+  explanation_translation_language?: LanguageCode | null
 }
 
 /**
@@ -231,6 +280,9 @@ export interface AnalysisResult {
   proposed_count: number
   insufficient_evidence: boolean
   coverage: CoverageSummary | null
+  language?: LanguageCode
+  provenance?: Provenance | null
+  reasoning?: ReasoningResult | null
 }
 
 export interface AnalyzeResponse {
@@ -359,5 +411,9 @@ export interface AskResponse {
   claims_checked: number
   /** Statements dropped because the evidence did not establish them. */
   claims_withheld: number
+  /** Not independently checked; present only when the answer held up in full. */
+  answer_translation?: string | null
+  answer_translation_language?: LanguageCode | null
+  provenance?: Provenance | null
   disclaimer: string
 }

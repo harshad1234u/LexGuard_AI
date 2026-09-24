@@ -19,6 +19,9 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field, field_validator
 
+from app.schemas.findings import LanguageCode
+from app.schemas.provenance import Provenance
+
 from app.schemas.findings import VerificationStatus
 
 #: Maximum question length. Generous for a real question, small enough that a
@@ -91,6 +94,13 @@ class AskRequest(BaseModel):
         max_length=MAX_QUESTION_CHARS,
         description="A question about this document. Treated as untrusted input.",
     )
+    language: LanguageCode = Field(
+        default=LanguageCode.EN,
+        description=(
+            "The reader's language. The checked answer stays in the document's language; "
+            "a translation is added beside it only when the answer fully held up."
+        ),
+    )
 
     @field_validator("question")
     @classmethod
@@ -136,4 +146,14 @@ class AskResponse(BaseModel):
             "Their text is never returned."
         ),
     )
+    answer_translation: str | None = Field(
+        default=None,
+        description=(
+            "The answer in the requested language. Not independently checked: present only "
+            "when every sentence of `answer` was supported and every figure in the "
+            "translation appears in the evidence."
+        ),
+    )
+    answer_translation_language: LanguageCode | None = None
+    provenance: Provenance | None = None
     disclaimer: str = DISCLAIMER

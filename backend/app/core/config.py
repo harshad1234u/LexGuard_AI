@@ -15,9 +15,9 @@ _REPO_ROOT = _BACKEND_DIR.parent
 #: the developer put it without silently falling back to "not configured".
 ENV_FILES = (_REPO_ROOT / ".env", _BACKEND_DIR / ".env")
 
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -28,10 +28,31 @@ class Settings(BaseSettings):
         extra="ignore",
         # `model_*` are our own config fields, not pydantic model attributes.
         protected_namespaces=(),
+        # A validation error otherwise echoes every input value - including a
+        # truncated API key - into the exception text and so into startup logs.
+        hide_input_in_errors=True,
     )
 
-    # --- Model provider ------------------------------------------------
-    nvidia_api_key: str | None = None
+    # --- Provider roles (Phase 23) --------------------------------------
+    # One setting per responsibility. Validated at startup; an unknown value
+    # refuses to start. There is no fallback: a role only ever calls the
+    # provider named here (docs/12_DEPLOYMENT.md, "Provider configuration").
+    analysis_provider: Literal["gemini", "nemotron"] = "gemini"
+    qa_provider: Literal["gemini", "nemotron"] = "gemini"
+    reasoning_provider: Literal["nemotron", "none"] = "nemotron"
+    # Master switch. Reasoning runs only if this is true AND the provider is
+    # not "none"; either one saying off wins, so no combination contradicts.
+    reasoning_enabled: bool = True
+    reasoning_timeout_seconds: int = 90
+
+    # --- Gemini ---------------------------------------------------------
+    gemini_api_key: str | None = Field(default=None, repr=False)
+    # No built-in default: a model name is a deployment decision, verified
+    # against the provider's current catalogue, never assumed by the code.
+    gemini_model: str | None = None
+
+    # --- NVIDIA -----------------------------------------------------------
+    nvidia_api_key: str | None = Field(default=None, repr=False)
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
     nemotron_model: str = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning"
     model_temperature: float = 0.6
@@ -73,6 +94,28 @@ class Settings(BaseSettings):
         default_factory=lambda: ["http://localhost:5173"]
     )
     log_level: str = "INFO"
+    app_env: Literal["development", "production"] = "development"
+
+    # --- Optional metadata persistence (Supabase, backend only) -----------
+    # Unset means in-memory only, which is the default and the test mode.
+    supabase_url: str | None = None
+    supabase_service_role_key: str | None = Field(default=None, repr=False)
+    persistence_hash_salt: str | None = Field(default=None, repr=False)
+    supabase_retention_days: int = Field(default=30, ge=1, le=365)
+
+    @model_validator(mode="after")
+    def _gemini_needs_a_model(self) -> "Settings":
+        """A role set to Gemini with no model name refuses to start.
+
+        The key may be missing - that role then reports not-configured at
+        request time - but a model name is never guessed.
+        """
+        uses_gemini = "gemini" in (self.analysis_provider, self.qa_provider)
+        if uses_gemini and not (self.gemini_model or "").strip():
+            raise ValueError(
+                "GEMINI_MODEL must be set when ANALYSIS_PROVIDER or QA_PROVIDER is gemini"
+            )
+        return self
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
@@ -106,9 +149,41 @@ class Settings(BaseSettings):
             return Path(self.temp_workspace_dir)
         return Path(__file__).resolve().parents[2] / ".workspace"
 
+    def provider_key_present(self, provider: str) -> bool:
+        """Whether the named provider has a key. A boolean, never the key."""
+        if provider == "gemini":
+            return bool(self.gemini_api_key)
+        if provider == "nemotron":
+            return bool(self.nvidia_api_key)
+        return False
+
+    @property
+    def reasoning_effective(self) -> bool:
+        """Whether the reasoning stage is switched on at all."""
+        return self.reasoning_enabled and self.reasoning_provider != "none"
+
+    @property
+    def persistence_configured(self) -> bool:
+        """Supabase credentials present, and a salt when in production."""
+        if not (self.supabase_url and self.supabase_service_role_key):
+            return False
+        if self.app_env == "production" and not self.persistence_hash_salt:
+            return False
+        return True
+
+    def provider_readiness(self) -> dict[str, bool]:
+        """Per-role readiness, as booleans only."""
+        return {
+            "analysis": self.provider_key_present(self.analysis_provider),
+            "qa": self.provider_key_present(self.qa_provider),
+            "reasoning": self.reasoning_effective
+            and self.provider_key_present(self.reasoning_provider),
+        }
+
     @property
     def model_configured(self) -> bool:
-        return bool(self.nvidia_api_key)
+        """Whether the selected *analysis* provider has its key."""
+        return self.provider_key_present(self.analysis_provider)
 
 
 @lru_cache

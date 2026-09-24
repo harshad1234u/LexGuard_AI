@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -15,6 +16,10 @@ from app.core.errors import AppError, ErrorCode
 from app.core.logging import get_logger
 from app.agents.runner import analysis_runner
 from app.documents.storage import document_store
+from app.persistence import get_repository, set_repository
+
+#: How often persisted metadata past its retention is purged.
+PURGE_INTERVAL_SECONDS = 3600
 
 logger = get_logger(__name__)
 
@@ -30,14 +35,54 @@ DISCLAIMER = (
 async def lifespan(app: FastAPI):
     settings = get_settings()
     settings.workspace_path.mkdir(parents=True, exist_ok=True)
-    if not settings.model_configured:
+
+    # Provider roles: names and booleans only, never a key.
+    readiness = settings.provider_readiness()
+    keys = {"gemini": "GEMINI_API_KEY", "nemotron": "NVIDIA_API_KEY"}
+    for role, provider in (
+        ("analysis", settings.analysis_provider),
+        ("qa", settings.qa_provider),
+    ):
+        if not readiness[role]:
+            logger.warning(
+                "%s is not set; the %s role (%s) will be unavailable.",
+                keys[provider], role, provider,
+            )
+    logger.info(
+        "provider roles analysis=%s qa=%s reasoning=%s reasoning_effective=%s",
+        settings.analysis_provider,
+        settings.qa_provider,
+        settings.reasoning_provider,
+        settings.reasoning_effective,
+    )
+    if settings.reasoning_effective and not readiness["reasoning"]:
         logger.warning(
-            "NVIDIA_API_KEY is not set; document analysis endpoints will be unavailable."
+            "NVIDIA_API_KEY is not set; reasoning notes will report 'unavailable'."
         )
+
+    # The repository's schema check is a network call: made off the loop.
+    repository = await asyncio.to_thread(get_repository)
+    purger = None
+    if repository.enabled:
+        repository.purge_expired()
+        purger = asyncio.create_task(_purge_periodically())
+
     yield
+    if purger is not None:
+        purger.cancel()
+    close = getattr(repository, "close", None)
+    if close is not None:
+        await asyncio.to_thread(close)
+    set_repository(None)
     # Ephemeral by design: nothing uploaded survives the process.
     analysis_runner.clear()
     document_store.clear()
+
+
+async def _purge_periodically() -> None:
+    while True:
+        await asyncio.sleep(PURGE_INTERVAL_SECONDS)
+        get_repository().purge_expired()
 
 
 def create_app() -> FastAPI:

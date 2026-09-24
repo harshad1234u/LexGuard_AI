@@ -19,13 +19,16 @@ from pydantic import BaseModel, Field, ValidationError
 
 from app.models.errors import ModelResponseError, make_error
 from app.models.payload import DocumentPayload
-from app.schemas.findings import ModelAnalysis, ModelAnswer
+from app.schemas.findings import LanguageCode, ModelAnalysis, ModelAnswer
 
 
 class AnalysisRequest(BaseModel):
     """Ask a model to identify clauses in a document."""
 
     payload: DocumentPayload
+    language: LanguageCode = LanguageCode.EN
+    """The reader's language. Only the *translation* fields follow it; claims,
+    quotes and the checked explanation stay in the document's language."""
 
 
 class QuestionRequest(BaseModel):
@@ -33,6 +36,7 @@ class QuestionRequest(BaseModel):
 
     payload: DocumentPayload
     question: str = Field(min_length=1, max_length=2000)
+    language: LanguageCode = LanguageCode.EN
 
 
 class ModelProvider(ABC):

@@ -149,6 +149,15 @@ class DocumentStore:
         for record in expired:
             self._remove_directory(record)
             logger.info("document expired document_id=%s", record.document_id)
+        if expired:
+            # Expiry reaches persisted metadata too. A no-op when persistence
+            # is disabled; imported here to keep storage free of that import
+            # at module load.
+            from app.persistence import get_repository
+
+            repository = get_repository()
+            for record in expired:
+                repository.delete_document(record.document_id)
         return len(expired)
 
     def clear(self) -> None:

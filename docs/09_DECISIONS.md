@@ -361,6 +361,56 @@ part that works - values bound to evidence, at zero measured cost - plus a
 label in the UI. That is weaker than verification, and the report says so
 rather than implying the field is checked.
 
+## Phase 23: two providers, one authority
+
+**Decision: provider roles, not a provider.** Analysis (`ANALYSIS_PROVIDER`),
+Q&A (`QA_PROVIDER`) and reasoning notes (`REASONING_PROVIDER` +
+`REASONING_ENABLED`) are configured separately. Gemini is the default for the
+first two, Nemotron for the third. Either switch saying "off" disables
+reasoning, so no combination is contradictory.
+
+**Decision: no fallback, silent or otherwise.** A role whose key is missing
+reports `not configured`; it never calls a different vendor. Two providers
+produce different findings from the same document, and a result whose provider
+changed without anyone knowing cannot be audited or reproduced. Provenance
+records the provider actually called.
+
+**Decision: reasoning runs after the release gate, over released findings
+only.** A second model is useful for pointing out that two clauses should be
+read together; it is not an authority on either. So it never sees page text or
+withheld proposals, its notes are gated for scope (known ids, quotes from the
+cited findings, figures present in them, no instructions, no legal
+conclusions), and every note carries a fixed "not independently verified" label.
+It cannot change a finding — asserted by deep-equality tests under hostile
+output. This is *not* the rejected "second LLM verifier": nothing it produces
+decides a release.
+
+**Decision: translations are additions, never replacements.** The semantic
+checks read English. A Tamil claim, explanation or answer would pass through
+checks that cannot read it, so checked text stays in the document's language
+and a translation is released *beside* it — only when the original fully
+passed, only when every numeral in it appears in the evidence, and always
+labelled "not independently checked". This is stricter than the plan approved
+for Phase 23, which would have released a Tamil explanation in place of the
+checked one.
+
+**Decision (ADR-005 amendment): optional metadata persistence.** Supabase may
+store document metadata, analysis-job metadata, *released* findings and Q&A
+metadata. Never stored: PDFs, page text, the raw filename (a salted SHA-256
+and the extension instead), questions, answers, withheld or unverified output,
+reasoning-note text, prompts, keys. Backend-only with the service-role key; RLS
+on every table with no policies, so browser roles can do nothing; writes refused
+unless the migration's schema probe answers. Rows cascade-delete on discard, on
+TTL expiry and on retention. The metadata is **not anonymous** — it is linked by
+document id — and there is no authentication, so there is no per-user
+isolation: acceptable for a single-tenant demo, a blocker for public use.
+
+**Decision: the pre-Phase-23 suite runs unchanged.** `conftest.py` pins the
+roles it was written against (Nemotron, no reasoning, no persistence) and blanks
+every key. The product defaults are tested separately. One pre-existing test
+changed: an exact response-key set was extended by the three approved fields,
+and remains exact.
+
 ## Scope: depth over breadth, against the problem statement
 
 **Decision: cover fewer of the problem statement's suggested directions, and

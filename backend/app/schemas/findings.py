@@ -28,6 +28,30 @@ class AttentionLevel(StrEnum):
     HIGH = "high"
 
 
+class LanguageCode(StrEnum):
+    """Languages a reader may ask for (Phase 23).
+
+    The document's own language is detected by the application
+    (`app.documents.language`), never taken from the model.
+    """
+
+    EN = "en"
+    TA = "ta"
+
+
+#: Upper bound on a model-supplied translation. Translations are extra text
+#: shown under a label, so an oversized one is refused rather than truncated.
+MAX_TRANSLATION_CHARS = 2000
+
+
+class FindingKind(StrEnum):
+    """What sort of statement the model says it is making. Recorded, not trusted."""
+
+    EXTRACTION = "extraction"
+    INTERPRETATION = "interpretation"
+    INFERENCE = "inference"
+
+
 class Evidence(BaseModel):
     """Where in the document a claim is said to come from."""
 
@@ -45,6 +69,16 @@ class Finding(BaseModel):
     evidence: Evidence | None = None
     explanation: str = ""
     attention: AttentionLevel = AttentionLevel.INFO
+    kind: FindingKind | None = None
+    explanation_translation: str = Field(
+        default="",
+        max_length=MAX_TRANSLATION_CHARS,
+        description=(
+            "The explanation in the reader's requested language, when one was asked for. "
+            "Never checked semantically; released only under the conditions in "
+            "`app.verification.policy.translation_decision`."
+        ),
+    )
 
 
 class ModelAnalysis(BaseModel):
@@ -65,6 +99,9 @@ class ModelAnswer(BaseModel):
     answer: str = ""
     evidence: list[Evidence] = Field(default_factory=list)
     not_found: bool = False
+    answer_translation: str = Field(default="", max_length=MAX_TRANSLATION_CHARS)
+    """The answer in the reader's requested language. The checked answer is
+    `answer`; this is released only when every sentence of `answer` survived."""
 
 
 class VerificationStatus(StrEnum):

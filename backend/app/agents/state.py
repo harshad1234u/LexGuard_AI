@@ -14,7 +14,15 @@ from __future__ import annotations
 
 from typing import TypedDict
 
-from app.schemas.analysis import AnalysisStage, CoverageSummary, ErrorCategory
+from app.models.reasoning import ModelReasoning, ReasoningFindingInput
+from app.schemas.analysis import (
+    AnalysisStage,
+    CoverageSummary,
+    ErrorCategory,
+    ReasoningNoteOut,
+    ReasoningStatus,
+)
+from app.schemas.findings import LanguageCode
 from app.schemas.findings import ModelAnalysis, VerifiedFinding
 from app.verification.policy import ReleaseOutcome
 
@@ -61,9 +69,33 @@ class AnalysisState(TypedDict, total=False):
     displayable_count: int
     withheld_count: int
 
+    # --- Request / provenance (Phase 23) --------------------------------------
+    language: LanguageCode
+    """The reader's language. Only translations follow it."""
+
+    provider_name: str
+    provider_model: str
+    deadline: float
+    """`time.monotonic()` by which the whole run must end. The reasoning stage
+    uses it to skip itself rather than push a finished analysis past its budget."""
+
+    # --- Reasoning (Phase 23; after the output gate, never before it) ----------
+    reasoning_input: tuple[ReasoningFindingInput, ...]
+    """Frozen copy of the released findings - the reasoning provider's entire view."""
+
+    reasoning_proposal: ModelReasoning
+    reasoning_status: ReasoningStatus
+    reasoning_failure_kind: str
+    reasoning_provider_name: str
+    reasoning_provider_model: str
+    reasoning_notes: list[ReasoningNoteOut]
+    reasoning_withheld: int
+
     # --- Failure ------------------------------------------------------------
     error_category: ErrorCategory
     error_message: str
+    provider_failure_kind: str
+    """A fixed `ProviderFailureKind` value. Logs, provenance and audit only."""
     """Plain-language and safe to show. Never provider or exception text."""
 
 

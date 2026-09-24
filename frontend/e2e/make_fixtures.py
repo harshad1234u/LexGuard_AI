@@ -31,6 +31,11 @@ SCENARIOS = (
     "novalues",
     "notext",
     "recovers",
+    # Phase 23
+    "reasoning",
+    "reasoning-failed",
+    "tamil",
+    "gemini-missing",
 )
 
 SENTENCE = "Either party may terminate this agreement by providing 30 days written notice."

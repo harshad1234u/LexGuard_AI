@@ -39,11 +39,13 @@ Three rules it enforces, in the order they matter:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from app.core.logging import get_logger
 from app.schemas.findings import (
     AttentionLevel,
+    LanguageCode,
     VerificationReason,
     VerificationStatus,
     VerifiedFinding,
@@ -64,6 +66,11 @@ from app.verification.semantics import (
 )
 
 logger = get_logger(__name__)
+
+#: Identifies the release rules a result was produced under. Recorded in every
+#: result's provenance, so a stored finding can be traced to the policy that
+#: released it. Bump on any change to what this module or the verifier admits.
+VERIFICATION_POLICY_VERSION = "2026-09-23.phase23"
 
 
 # ---------------------------------------------------------------------------
@@ -254,6 +261,55 @@ def explanation_decision(explanation: str, context: str) -> ExplanationDecision:
     return ExplanationDecision(explanation, verified)
 
 
+# ---------------------------------------------------------------------------
+# Translations (Phase 23)
+# ---------------------------------------------------------------------------
+
+
+def translation_decision(translation: str, *, original_passed: bool, context: str) -> str | None:
+    """Whether a model-written translation may be shown, and as what text.
+
+    A translation is never verified: the semantic checks understand English,
+    and nothing here reads Tamil. So a translation is only ever an *addition*
+    beside text that was checked, shown under a "not independently checked"
+    label, and it is released only when all of the following hold:
+
+    * the original it translates passed every check (`original_passed`) - a
+      translation of text that was trimmed or withheld could carry exactly
+      the part that failed;
+    * it is not instruction-like;
+    * every digit sequence in it appears in the evidence. Values survive
+      translation as digits, so this is the one check that still means
+      something across languages. It compares numerals only - "30 days"
+      and "30 நாட்கள்" both carry 30 - because the unit words that
+      `values_in_evidence` reads are English. Numbers written out as Tamil
+      words are not detected, a limitation recorded in docs/PHASE_23_REPORT.md.
+
+    Returning None drops the translation. It never withholds the finding or the
+    answer: the checked original is unaffected either way.
+    """
+    text = (translation or "").strip()
+    if not text or not original_passed:
+        return None
+    if looks_like_injection(text):
+        return None
+    if not context or not _numerals(text) <= _numerals(context):
+        return None
+    return text
+
+
+_NUMERAL = re.compile(r"\d+(?:[.,]\d+)*")
+
+
+def _numerals(text: str) -> set[str]:
+    """Digit sequences, thousands separators removed: "5,000" -> "5000"."""
+    found = set()
+    for match in _NUMERAL.findall(text):
+        # A trailing ".5" is a decimal; a "," is a thousands separator.
+        found.add(match.replace(",", ""))
+    return found
+
+
 @dataclass(frozen=True)
 class ReleasedFinding:
     """One finding as the application is willing to publish it.
@@ -273,6 +329,8 @@ class ReleasedFinding:
     attention: AttentionLevel
     section: str | None
     type: str
+    explanation_translation: str | None = None
+    """Set only under `translation_decision`. Never verified; labelled so."""
 
 
 @dataclass(frozen=True)
@@ -299,7 +357,9 @@ def _reject(item: VerifiedFinding, reason: VerificationReason) -> VerifiedFindin
 
 
 def release_finding(
-    item: VerifiedFinding, document: EvidenceSource
+    item: VerifiedFinding,
+    document: EvidenceSource,
+    language: LanguageCode = LanguageCode.EN,
 ) -> ReleasedFinding | VerifiedFinding:
     """Decide whether and how one verified finding may be shown.
 
@@ -330,6 +390,17 @@ def release_finding(
         explanation = decision.text
         explanation_verified = decision.verified
 
+    # --- The translation (Phase 23) -----------------------------------------
+    # Only for a reader who asked for another language, and only beside an
+    # explanation the evidence fully established.
+    translation = None
+    if language != LanguageCode.EN and explanation:
+        translation = translation_decision(
+            item.finding.explanation_translation,
+            original_passed=explanation_verified,
+            context=context,
+        )
+
     return ReleasedFinding(
         finding=item,
         claim=item.finding.claim,
@@ -339,11 +410,14 @@ def release_finding(
         attention=derive_attention(context or (evidence.quote if evidence else "")),
         section=confirm_section(evidence.section if evidence else None, page_text),
         type=safe_type(item.finding.type),
+        explanation_translation=translation,
     )
 
 
 def release_findings(
-    verified: list[VerifiedFinding], document: EvidenceSource
+    verified: list[VerifiedFinding],
+    document: EvidenceSource,
+    language: LanguageCode = LanguageCode.EN,
 ) -> ReleaseOutcome:
     """The release boundary for the analysis path.
 
@@ -355,7 +429,7 @@ def release_findings(
     unverified_explanations = 0
 
     for item in verified:
-        decision = release_finding(item, document)
+        decision = release_finding(item, document, language)
         if isinstance(decision, ReleasedFinding):
             outcome.released.append(decision)
             if decision.finding.finding.evidence and (

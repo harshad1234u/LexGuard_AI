@@ -16,6 +16,7 @@ behaviour harmless.
 from __future__ import annotations
 
 from app.models.payload import DocumentPayload
+from app.schemas.findings import LanguageCode
 
 SYSTEM_PROMPT = """\
 You are a legal document analysis assistant. You read a document supplied by \
@@ -96,10 +97,48 @@ Return ONLY a JSON object of this shape, with no commentary before or after:
 """
 
 
-def build_analysis_prompt(payload: DocumentPayload) -> str:
+#: Language names as written into a prompt.
+_LANGUAGE_NAMES = {LanguageCode.TA: "Tamil"}
+
+ANALYSIS_TRANSLATION_INSTRUCTIONS = """\
+The reader has asked for explanations in {language}. Keep "claim", "explanation" \
+and every "quote" exactly as specified above, in the language the document is \
+written in - they are checked against the document automatically. In addition, \
+add to each finding:
+
+- "explanation_translation": the same explanation written in {language}. \
+Translate only; do not add, remove or soften anything. Keep every number, \
+amount, percentage, duration and date exactly as the document writes it. \
+Preserve whether something must, may or must not happen, who must do it, and \
+any condition on it.
+"""
+
+QUESTION_TRANSLATION_INSTRUCTIONS = """\
+The reader has asked for the answer in {language}. Write "answer" in the \
+language the document is written in, exactly as specified above - it is checked \
+against the document automatically. Also include "answer_translation": the same \
+answer in {language}, translating only, with every number, amount, duration and \
+date kept exactly as the document writes it.
+"""
+
+
+def _translation_block(template: str, language: LanguageCode) -> str:
+    """The extra instruction for a non-English reader, or nothing for English.
+
+    English adds no text at all, so an English prompt is byte-for-byte what it
+    was before Phase 23.
+    """
+    name = _LANGUAGE_NAMES.get(LanguageCode(language))
+    return f"\n{template.format(language=name)}" if name else ""
+
+
+def build_analysis_prompt(
+    payload: DocumentPayload, language: LanguageCode = LanguageCode.EN
+) -> str:
     """User-turn content for a document analysis request."""
     return (
-        f"{ANALYSIS_INSTRUCTIONS}\n"
+        f"{ANALYSIS_INSTRUCTIONS}"
+        f"{_translation_block(ANALYSIS_TRANSLATION_INSTRUCTIONS, language)}\n"
         f"The following pages are the complete content supplied to you. "
         f"Pages supplied: {payload.supplied_page_numbers}.\n\n"
         "--- BEGIN UNTRUSTED DOCUMENT CONTENT ---\n"
@@ -108,7 +147,9 @@ def build_analysis_prompt(payload: DocumentPayload) -> str:
     )
 
 
-def build_question_prompt(payload: DocumentPayload, question: str) -> str:
+def build_question_prompt(
+    payload: DocumentPayload, question: str, language: LanguageCode = LanguageCode.EN
+) -> str:
     """User-turn content for a document-grounded question.
 
     The question is placed after the document and labelled, so a document that
@@ -118,6 +159,7 @@ def build_question_prompt(payload: DocumentPayload, question: str) -> str:
         "--- BEGIN UNTRUSTED DOCUMENT CONTENT ---\n"
         f"{payload.render()}\n"
         "--- END UNTRUSTED DOCUMENT CONTENT ---\n\n"
-        f"{QUESTION_INSTRUCTIONS}\n"
+        f"{QUESTION_INSTRUCTIONS}"
+        f"{_translation_block(QUESTION_TRANSLATION_INSTRUCTIONS, language)}\n"
         f"The user's question is:\n{question.strip()}\n"
     )
