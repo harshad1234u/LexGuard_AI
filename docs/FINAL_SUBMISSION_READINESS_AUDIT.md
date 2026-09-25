@@ -58,7 +58,7 @@ To ensure strict epistemic honesty, overconfident or excessively broad statement
 
 ### Claim 4: "No vulnerabilities, unauthorized data leaks, silent fallback behaviors, unhandled crashes, or false claims exist in the codebase."
 - **Classification:** `TOO BROAD / SHOULD BE REWRITTEN`
-- **Correction:** *No vulnerabilities were identified within the executed test and audit scope. The system retains documented semantic false-negative limitations.*
+- **Correction:** *No P0 issues were identified within the executed audit and test scope. This does not establish the absence of all possible vulnerabilities, runtime failures, semantic false negatives, or defects.*
 
 ### Claim 5: "The application code, verification engine, deterministic index, and UI are fully functional, verified, and safe for submission."
 - **Classification:** `PARTIALLY SUPPORTED / TOO BROAD`
@@ -170,9 +170,11 @@ All three known false negatives are pinned in `backend/tests/test_independent_co
 | **Evidence Grounding** | **`PASS`** | 39/39 synthetic attack detection, 49/52 independent detection (94.2% of adversarial cases; 3 pinned FN) |
 | **Gemini Live Validation** | **`BLOCKED (UNBILLED)`** | Free-tier daily quota and 503 capacity limits; safe failure verified |
 | **Demo Readiness** | **`PASS`** | Synthetic PDF generated; resilient offline backup path verified |
-| **Production Readiness** | **`NOT APPLICABLE`** | Hackathon evaluation build; persistence unapplied by design |
+| **Production Readiness** | **`NOT ASSESSED`** | Persistence unapplied (NullRepository active); remote calls not made; operational deployment, rate limiting, and retention controls not evaluated |
 
 ### Overall Submission Verdict:
-# **`READY WITH DISCLOSED LIMITATIONS`**
+# **`READY FOR HACKATHON SUBMISSION WITH DISCLOSED LIMITATIONS`**
 
-*Full Gemini multi-turn analysis and Q&A are not currently validated in this environment because of upstream capacity and rate-limit restrictions.* The core local software, verification engine, offline Value Index, and responsive UI pass all executed tests within the validated environment. This assessment covers the implemented MVP scope and does not extend to excluded capabilities (document comparison, OCR, export) or untested provider configurations.
+The implemented MVP scope of LexGuard AI passed the executed backend, frontend, browser, security-control, and evaluation checks within the documented scope. Three semantic false negatives remain pinned in the independent evaluation corpus. Full Gemini multi-turn document analysis and Q&A were not completely validated because of upstream provider quota and capacity limitations.
+
+The MVP is ready for PromptWars hackathon evaluation within the disclosed scope and limitations. This does not represent production readiness, complete live-provider validation, or proof that all possible defects are absent.

@@ -76,8 +76,8 @@ Systematic search of all `FINAL_*.md` documents for absolute/overconfident claim
 
 ### Classification: `TOO BROAD / SHOULD BE REWRITTEN`
 
-### Corrected text (already applied in Section 3, Claim 4 of the same document):
-> "No vulnerabilities were identified within the executed test and audit scope. The system retains documented semantic false-negative limitations."
+### Corrected text:
+> "No P0 issues were identified within the executed audit and test scope. This does not establish the absence of all possible vulnerabilities, runtime failures, semantic false negatives, or defects."
 
 ### Verification:
 - The 3 pinned false negatives are **documented and regression-tested** in [`test_independent_corpus.py:45-58`](file:///d:/code_placed/promprtwar/backend/tests/test_independent_corpus.py#L45-L58)
@@ -262,12 +262,13 @@ All three cases are located in [`fixtures_independent.py`](file:///d:/code_place
 
 # **READY FOR HACKATHON SUBMISSION WITH DISCLOSED LIMITATIONS**
 
-The implemented MVP scope of LexGuard AI passes all executed automated tests (1,757 backend, 46 Playwright, 67 synthetic eval cases, 75 independent corpus cases) without regressions.
+The implemented MVP scope of LexGuard AI passed the executed backend, frontend, browser, security-control, and evaluation checks within the documented scope. Three semantic false negatives remain pinned in the independent evaluation corpus. Full Gemini multi-turn document analysis and Q&A were not completely validated because of upstream provider quota and capacity limitations.
+
+The MVP is ready for PromptWars hackathon evaluation within the disclosed scope and limitations. This does not represent production readiness, complete live-provider validation, or proof that all possible defects are absent.
 
 **Disclosed limitations:**
-1. Full Gemini multi-turn analysis and Q&A are not validated due to free-tier quota constraints.
+1. Full Gemini multi-turn analysis and Q&A are not validated due to free-tier quota and capacity constraints.
 2. Three semantic false negatives are documented, pinned, and regression-tested.
 3. Document comparison, OCR, export, and legal advice features are excluded by design.
 4. Supabase persistence migration is intentionally unapplied (NullRepository active).
-
-This verdict distinguishes **local MVP verification** (all tests pass) from **live provider verification** (Gemini quota-constrained). The assessment does not extend to excluded capabilities or untested provider configurations.
+5. Production readiness: Not assessed. Deployment configuration, rate limiting, retention, and operational controls were not evaluated.
