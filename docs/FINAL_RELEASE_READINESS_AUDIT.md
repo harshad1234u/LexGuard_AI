@@ -24,7 +24,7 @@ Every claim, quote, citation, modal verb, actor role, numerical figure, and temp
 ### Pre-Submission Audit Highlights:
 - **Repository Hygiene:** Clean working tree on branch `migration/gemini`. Zero API keys or secrets detected across codebase, git history, or production bundles.
 - **Bug Resolution (Single-Quote Definitions):** Identified and resolved a subtle extraction defect in `semantics.py` where single quotes (`'...'`) and typographic single quotes (`‘...’`) commonly used in Commonwealth/UK contracts failed to trigger definition conflict detection. Added `TestSingleQuotesAreStillQuotes` with 6 regression tests; all passed.
-- **Backend Test Suite:** **1,753 passed**, 1 skipped, 6 deselected, 0 failed in 57.36s.
+- **Backend Test Suite:** **1,757 passed**, 1 skipped, 6 deselected, 0 failed in 78.75s. *(Updated 2026-09-25; original audit ran against 1,753 before Workstream 4 tests were added.)*
 - **Frontend Code Quality:** `oxlint` returned 0 errors/warnings on 50 files; `tsc -b && vite build` passed cleanly in 164ms; bundle secret audit confirmed 0 credentials in `dist/`.
 - **Browser Playwright E2E Suite:** **46/46 passed** in 55.6s across mobile (390px), tablet (768px), and desktop (1280px, 1440px) viewports.
 - **Adversarial Grounding Evaluation:** 100% attack detection (39/39) on synthetic harness (`eval_harness.py`); 94.2% detection (49/52) on independent multi-domain contract corpus (`eval_independent.py`).
@@ -60,7 +60,7 @@ Full details and test logs are recorded in [`docs/FINAL_TEST_EXECUTION_REPORT.md
 ================================================================================
 FINAL VERIFICATION AUDIT SUITE EXECUTION RESULTS
 ================================================================================
-1. Backend Pytest Suite:        1,753 PASSED (1 skipped, 6 deselected, 0 failed) [57.36s]
+1. Backend Pytest Suite:        1,757 PASSED (1 skipped, 6 deselected, 0 failed) [78.75s]
 2. Frontend Oxlint:             50 files scanned, 0 warnings, 0 errors [19ms]
 3. Frontend TypeScript & Build: 58 modules transformed, clean dist/ [164ms]
 4. Client Bundle Secret Scan:   0 secret patterns detected in dist/
@@ -69,7 +69,7 @@ FINAL VERIFICATION AUDIT SUITE EXECUTION RESULTS
 7. Independent Legal Corpus:    49 / 52 attacks caught (94.2% detection, 3 documented FN) [1.1s]
 8. Demo PDF Contract Generator: Generated 3-page synthetic legal services agreement [clean]
 ================================================================================
-TOTAL AUTOMATED TESTS EXECUTED: 1,868 across all layers — 0 REGRESSIONS
+TOTAL AUTOMATED RUNNER TESTS: 1,803 (1,757 pytest + 46 Playwright) — 0 REGRESSIONS
 ================================================================================
 ```
 
@@ -99,7 +99,7 @@ Full screen-by-screen, responsive, and accessibility audit is documented in [`do
 
 ## 6. Provider Validation & Quota Reality
 
-- **Nemotron Provider (`meta/llama-3.1-70b-instruct`):** Fully operational via NVIDIA NIM. Reasoning notes generation validated live.
+- **Nemotron Provider (`meta/llama-3.1-70b-instruct`):** Operational via NVIDIA NIM in tested environment. Reasoning notes generation validated in integration tests.
 - **Gemini Provider (`gemini-3-flash-preview`):**
   - Live authentication: Verified.
   - API endpoint probing: HTTP 200 OK.
@@ -118,7 +118,7 @@ Full screen-by-screen, responsive, and accessibility audit is documented in [`do
 *(Alternative strict operational verdict: `BLOCKED — ENVIRONMENT OR PROVIDER VALIDATION REQUIRED` if evaluated exclusively against zero-cost, unbilled Google AI Studio free-tier multi-turn quota reset).*
 
 ### Verdict Rationale:
-1. **Application & Verification Engine:** 100% complete, fully implemented, and validated across 1,868 automated tests without a single regression or failure.
-2. **Safety Architecture:** Deterministic gates, prompt injection defenses, single release boundaries, and canary redaction are fully operational.
-3. **Frontend & UX:** Fully verified across desktop, tablet, and mobile viewports with comprehensive accessibility and epistemic honesty.
+1. **Application & Verification Engine:** The implemented MVP scope passes all 1,803 automated runner tests (1,757 pytest + 46 Playwright) and 75 independent corpus evaluations without regressions. Capabilities excluded from MVP (document comparison, OCR, export) remain unimplemented.
+2. **Safety Architecture:** Deterministic gates, prompt injection defenses, single release boundaries, and canary redaction pass all tested scenarios. No P0 issues were identified within the executed audit scope.
+3. **Frontend & UX:** Verified across desktop, tablet, and mobile viewports in Playwright tests 1–46. WCAG 2.1 AA compliance checked for color contrast and keyboard operability.
 4. **Disclosed Limitations:** Transparently documented in [`docs/FINAL_KNOWN_LIMITATIONS.md`](file:///d:/code_placed/promprtwar/docs/FINAL_KNOWN_LIMITATIONS.md). The application performs safely and honestly within its designated boundaries.

@@ -3,8 +3,8 @@
 **Project:** LexGuard AI — Legal Document Intelligence  
 **Theme:** GenAI for Legal Assistance & Access (PromptWars)  
 **Branch:** `migration/gemini`  
-**Current Commit:** `6fe13c7`  
-**Audit Timestamp:** 2026-09-25 18:05 IST  
+**Current Commit:** `ab74c2c`  
+**Audit Timestamp:** 2026-09-25 18:15 IST (re-verified)  
 **Working Tree Status:** Clean  
 
 ---
@@ -167,7 +167,7 @@ All three known false negatives are pinned in `backend/tests/test_independent_co
 | **Frontend Quality** | **`PASS`** | 0 oxlint warnings, clean TypeScript build, 0 bundle secrets |
 | **Browser Testing** | **`PASS`** | 46/46 Playwright tests passed across 4 responsive viewports |
 | **Security Controls** | **`PASS`** | Fail-closed release boundary, canary redaction, injection defenses verified |
-| **Evidence Grounding** | **`PASS`** | 100% synthetic attack detection, 94.2% independent detection (3 pinned FN) |
+| **Evidence Grounding** | **`PASS`** | 39/39 synthetic attack detection, 49/52 independent detection (94.2% of adversarial cases; 3 pinned FN) |
 | **Gemini Live Validation** | **`BLOCKED (UNBILLED)`** | Free-tier daily quota and 503 capacity limits; safe failure verified |
 | **Demo Readiness** | **`PASS`** | Synthetic PDF generated; resilient offline backup path verified |
 | **Production Readiness** | **`NOT APPLICABLE`** | Hackathon evaluation build; persistence unapplied by design |
@@ -175,4 +175,4 @@ All three known false negatives are pinned in `backend/tests/test_independent_co
 ### Overall Submission Verdict:
 # **`READY WITH DISCLOSED LIMITATIONS`**
 
-*Full Gemini multi-turn analysis and Q&A are not currently validated in this environment because of upstream capacity and rate-limit restrictions.* The core local software, verification engine, offline Value Index, and responsive UI are fully tested, verified, and safe for PromptWars hackathon submission.
+*Full Gemini multi-turn analysis and Q&A are not currently validated in this environment because of upstream capacity and rate-limit restrictions.* The core local software, verification engine, offline Value Index, and responsive UI pass all executed tests within the validated environment. This assessment covers the implemented MVP scope and does not extend to excluded capabilities (document comparison, OCR, export) or untested provider configurations.

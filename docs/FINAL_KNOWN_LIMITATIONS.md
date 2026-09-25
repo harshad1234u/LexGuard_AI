@@ -46,7 +46,7 @@ The limitations listed below are not unresolved bugs; they define the precise op
 ### 3.2 Narrative Explanation is Labelled Interpretation (Unverified)
 - **Structure:** Each finding carries a concise `claim` (one sentence) and a narrative `explanation` (1–3 sentences).
 - **Verification Asymmetry:**
-  - `claim`: 100% verified against quoted evidence across 8 semantic axes.
+  - `claim`: Verified against quoted evidence across 8 semantic axes (polarity, modality, actor, conditionality, scope, temporal, numeric, cross-reference). Three known false-negative edge cases are documented in §5.
   - `explanation`: Verified **only for numeric and date consistency**. Full semantic verification of multi-sentence narrative explanations was measured and rejected due to unacceptable false-positive rates (withholding valid explanations).
 - **UI Treatment:** Every explanation is rendered with an amber pill: *"Interpretation — not verified against the document"*, and the API sets `explanation_verified: false`.
 

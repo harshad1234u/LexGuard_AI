@@ -129,7 +129,7 @@ The 3 false negatives in `eval_independent.py` represent known, documented edge 
 ## 4. Test Execution Sign-Off
 
 The test suite demonstrates comprehensive coverage across every tier of the LexGuard AI application:
-- **Unit & Property Verification:** 1,753 tests passing.
+- **Unit & Property Verification:** 1,757 tests passing.
 - **Security & Secret Hygiene:** 0 secrets detected.
 - **Frontend & End-to-End User Experience:** 46 Playwright tests passing across 4 viewports.
 - **Adversarial Robustness:** 100% attack detection on synthetic harness; 94.2% on independent corpus.
