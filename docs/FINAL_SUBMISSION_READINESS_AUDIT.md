@@ -14,7 +14,7 @@
 | Environment Property | Verified Value | Notes |
 |---|---|---|
 | Git Branch | `migration/gemini` | Matches active development line |
-| HEAD Commit | `6fe13c7` | Verified via `git log -1` |
+| HEAD Commit | `ab74c2c` | Verified via `git log -1` |
 | Working Tree | Clean | Zero untracked or modified application files |
 | Operating System | Windows Server / Windows 11 (`NT 10.0.26200`) | Validated environment |
 | Python Runtime | Python 3.11.9 (`backend/.venv/`) | Virtual environment isolated |

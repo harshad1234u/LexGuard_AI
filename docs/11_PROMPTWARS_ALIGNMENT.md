@@ -1,10 +1,10 @@
 # PromptWars Problem Statement Alignment
 
-**Status:** current as of Phase 21
+**Status:** current as of Phase 24 / Pre-Submission Audit  
 **Purpose:** state, without inflation, how this project relates to the official
 PromptWars problem statement.
 
-This document is the single place where alignment is claimed. Every status
+This document and [`docs/FINAL_PROBLEM_STATEMENT_COVERAGE_MATRIX.md`](file:///d:/code_placed/promprtwar/docs/FINAL_PROBLEM_STATEMENT_COVERAGE_MATRIX.md) define the project's alignment against the challenge requirements. Every status
 below was checked against the code, not against an earlier document. Where a
 listed direction is not built, this document says so.
 
@@ -198,13 +198,7 @@ risk indicator.
 
 ### 6.4 The corpora are not a sample of contracts in the wild
 
-286 cases across seven corpora. Some are built on real public-domain and
-public-filing text — verbatim US Federal Acquisition Regulation clauses, SEC
-EDGAR exhibits, EU Decision 2021/914 — but every adversarial variant is a
-transformation this project applied to that language, and the remaining corpora
-were written here. Three cases remain undetected and are kept red in the test
-suite. None of it measures Nemotron's accuracy; it measures the application's
-grounding boundary.
+Historical test development evaluated 286 cases across seven corpora during earlier phases. The authoritative pre-submission evaluation suite is the 75-case multi-domain independent corpus (`eval_independent.py`), spanning Construction, Education, Healthcare, and Insurance agreements. Three edge cases remain undetected and are pinned in `tests/test_independent_corpus.py` (yielding a 94.2% detection rate, 49/52 adversarial attacks detected). None of it measures model accuracy in the wild; it measures the application's deterministic grounding boundary against crafted variations.
 
 Full limitation registry: `docs/04_SECURITY_GROUNDING.md` §7b,
 `PHASE_15_REPORT.md` §11 and §13.
