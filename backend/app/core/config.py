@@ -54,11 +54,11 @@ class Settings(BaseSettings):
     # --- NVIDIA -----------------------------------------------------------
     nvidia_api_key: str | None = Field(default=None, repr=False)
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
-    nemotron_model: str = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning"
+    nemotron_model: str = "nvidia/nemotron-3-super-120b-a12b"
     model_temperature: float = 0.6
     model_top_p: float = 0.95
     model_max_output_tokens: int = 20480
-    model_timeout_seconds: int = 180
+    model_timeout_seconds: int = 420
 
     # --- Workflow ------------------------------------------------------
     # A whole-run budget, above the provider's per-call timeout. Generous by

@@ -64,7 +64,7 @@ word exists. You provide legal information, not legal advice.
 """
 
 ANALYSIS_INSTRUCTIONS = """\
-Identify the significant clauses in the document. For each one, return an entry with:
+Identify the most significant clauses in the document (up to 12 key provisions). For each one, return an entry with:
 
 - "type": a short lowercase category, such as parties, term, termination, \
 payment, fees, renewal, confidentiality, liability, indemnity, governing_law, \
@@ -75,7 +75,7 @@ dispute_resolution.
 - "explanation": two or three sentences explaining it to a non-lawyer.
 - "attention": "info", "review" or "high" - how much the reader should scrutinise it.
 
-Return ONLY a JSON object of this shape, with no commentary before or after:
+Return ONLY a JSON object of this shape, starting directly with {"findings": [, with no commentary before or after:
 
 {"findings": [ ... ]}
 
@@ -85,14 +85,18 @@ If the document supports no findings, return {"findings": []}.
 QUESTION_INSTRUCTIONS = """\
 Answer the question using ONLY the document content supplied above.
 
+State your answer in complete grammatical sentence(s) (never return an isolated number or bare fragment). Faithfully preserve any conditions, exceptions, and negative phrasing (such as "shall not exceed", "subject to", or "except for") exactly as expressed in the cited text.
+
+Always cite quotes from the operative numbered sections of the agreement (e.g. Section 6, Section 15, Section 19, etc.) rather than introductory summary recitals or document control headers.
+
 If the document does not contain the answer, say so plainly and set \
 "not_found" to true. A clear "not found" is correct and expected; a guess is \
 not. Do not answer from general legal knowledge.
 
-Return ONLY a JSON object of this shape, with no commentary before or after:
+Return ONLY a JSON object of this shape, starting directly with {"answer":, with no commentary before or after:
 
-{"answer": "<plain-language answer>",
- "evidence": [{"page": <page number>, "section": null, "quote": "<exact text>"}],
+{"answer": "<plain-language answer in complete sentence(s)>",
+ "evidence": [{"page": <page number>, "section": null, "quote": "<exact text copied character-for-character from that page>"}],
  "not_found": false}
 """
 

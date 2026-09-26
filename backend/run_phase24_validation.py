@@ -550,7 +550,7 @@ async def validate_live_nemotron_reasoning(config_status):
         status="completed",
     )
     assert prov.reasoning_provider == "nemotron"
-    assert prov.reasoning_model == "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning"
+    assert prov.reasoning_model == provider.model_id
     print(f"PASS Invariant 10: Provenance records: provider={prov.provider}, model={prov.model}, reasoning={prov.reasoning_provider}/{prov.reasoning_model}")
 
     return {

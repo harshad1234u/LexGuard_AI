@@ -33,7 +33,7 @@ services:
       - key: GEMINI_MODEL
         value: gemini-3.8-flash
       - key: NEMOTRON_MODEL
-        value: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning
+        value: nvidia/nemotron-3-super-120b-a12b
       - key: ALLOWED_ORIGINS
         sync: false            # the exact Vercel origin, e.g. https://lexguard.vercel.app
       - key: GEMINI_API_KEY

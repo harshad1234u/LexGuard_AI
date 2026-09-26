@@ -1,4 +1,4 @@
-# PromptWars Legal AI
+# LexGuard AI
 
 **PromptWars problem statement:** *AI for Legal Assistance & Access*
 
@@ -27,9 +27,8 @@ React + Vite + TypeScript + Tailwind
                 ↓
         LangChain / LangGraph
                 ↓
-      NVIDIA Hosted API
-                ↓
- Nemotron 3 Nano Omni 30B-A3B
+  Gemini (analysis + Q&A, default)
+  Nemotron (reasoning notes, post-release)
                 ↓
        Structured Model Output
                 ↓
@@ -92,7 +91,7 @@ reasoning: [`docs/11_PROMPTWARS_ALIGNMENT.md`](docs/11_PROMPTWARS_ALIGNMENT.md).
 | 13 | Cross-domain validation and named-entity role safety | Done |
 | 14 | Independent adversarial validation and security hardening | Done |
 | 15 | Structural safety, end-to-end coverage and release hardening | Done |
-| 23 | Gemini + Nemotron provider roles, reasoning notes, Tamil translations, optional Supabase metadata, deployment prep | Done against stubs; **not verified live** — see [`docs/PHASE_23_REPORT.md`](docs/PHASE_23_REPORT.md) |
+| 23 | Gemini + Nemotron provider roles, reasoning notes, Tamil translations, optional Supabase metadata, deployment prep | Done against stubs; live validation blocked by Gemini quota exhaustion in Phase 24 (all safety invariants verified by test) — see [`docs/PHASE_24E_FINAL_GEMINI_PRODUCTION_GATE_REPORT.md`](docs/PHASE_24E_FINAL_GEMINI_PRODUCTION_GATE_REPORT.md) |
 
 **MVP demo-ready with documented limitations.** Not production-ready, not
 legally accurate, and nothing here establishes either — see
@@ -367,7 +366,7 @@ python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt   # Windows
 # source .venv/bin/activate && pip install -r requirements.txt   # macOS/Linux
 
-cp ../.env.example .env        # then fill in NVIDIA_API_KEY
+cp ../.env.example .env        # then fill in GEMINI_API_KEY (required) and NVIDIA_API_KEY (for reasoning)
 .venv/Scripts/python -m uvicorn app.main:app --reload --port 8000
 ```
 
@@ -382,7 +381,7 @@ npm run dev     # http://localhost:5173, proxies /api to port 8000
 ### Tests
 
 ```bash
-cd backend && .venv/Scripts/python -m pytest          # 1587 pass, offline
+cd backend && .venv/Scripts/python -m pytest          # 1757 pass, 1 skip, offline (6 live tests deselected by default)
 cd frontend && npm run test:e2e                       # 34 browser flows, stub backend
 ```
 
@@ -392,7 +391,7 @@ suite from reaching a real key.
 
 ## Security notes
 
-- `NVIDIA_API_KEY` is server-side only. The browser never contacts the model provider; all AI
+- `GEMINI_API_KEY` and `NVIDIA_API_KEY` are server-side only. The browser never contacts any model provider; all AI
   traffic is proxied through the backend.
 - Uploaded documents are processed in an ephemeral per-document workspace and deleted on
   discard, on TTL expiry, and at shutdown. Nothing is stored permanently.
