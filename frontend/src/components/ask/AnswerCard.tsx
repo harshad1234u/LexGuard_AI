@@ -2,6 +2,9 @@ import { pageRef, plural } from '../../lib/format'
 import { ANSWER_STATUS, TONE_CLASSES } from '../../lib/verdicts'
 import type { AnswerEvidence, AskResponse } from '../../types/api'
 import { Icon } from '../ui/Icon'
+import { TranslationLabel } from '../ui/LanguageSelect'
+
+const PROVIDER_NAMES: Record<string, string> = { gemini: 'Gemini', nemotron: 'Nemotron' }
 import { VerificationBadge } from '../ui/VerificationBadge'
 
 function EvidenceItem({ item }: { item: AnswerEvidence }) {
@@ -58,6 +61,17 @@ export function AnswerCard({ answer }: { answer: AskResponse }) {
           <p className="mt-2 text-[0.9375rem] leading-relaxed text-slate-900">{answer.answer}</p>
         </div>
 
+        {/* Present only when every sentence of the answer held up. The
+            evidence below is always the document's own wording. */}
+        {answer.answer_translation && (
+          <div className="border-l-2 border-amber-300 pl-3" lang="ta">
+            <TranslationLabel />
+            <p className="mt-1 text-[0.9375rem] leading-relaxed text-slate-800">
+              {answer.answer_translation}
+            </p>
+          </div>
+        )}
+
         {answer.evidence.length > 0 && (
           <div>
             <h4 className="font-mono text-[0.6875rem] font-semibold tracking-wider text-slate-500 uppercase">
@@ -87,6 +101,14 @@ export function AnswerCard({ answer }: { answer: AskResponse }) {
             {answer.withheld_evidence === 1 ? 'quote was' : 'quotes were'} withheld because they
             could not be located in this document, or were instructions rather than contract terms.
             Their text is not shown.
+          </p>
+        )}
+
+        {answer.provenance && (
+          <p className="font-mono text-[0.6875rem] text-slate-500">
+            Answered by{' '}
+            {PROVIDER_NAMES[answer.provenance.provider] ?? answer.provenance.provider} ·
+            Verification: application-controlled
           </p>
         )}
 

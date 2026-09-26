@@ -149,6 +149,20 @@ words are discarded and the application answers in its own voice —
 *"I couldn't find this information in the uploaded document."* — which reports
 that nothing could be confirmed, never that the clause does not exist.
 
+## 8a. Reasoning notes (Phase 23)
+
+A second, optional model call after the release gate. Input: released findings
+only (id, type, claim, quote, page) inside an untrusted fence. Output: at most
+20 notes, each a category (`conflict`, `dependency`, `condition`,
+`definition_reference`, `needs_review`), at most 600 characters, 1–5 cited
+finding ids and 0–3 quotes. `reason_gate` withholds any note that cites an
+unknown id, quotes outside the cited findings, states a figure they lack, reads
+as an instruction, or asserts a legal conclusion or verification. Released notes
+carry the fixed label "Reasoning note — not independently verified" and never
+alter a finding. A failure is recorded on `result.reasoning` and never fails the
+analysis. Provider: `REASONING_PROVIDER` (Nemotron), timeout
+`REASONING_TIMEOUT_SECONDS`, capped by the analysis's remaining budget.
+
 ## 9. Retry policy — none
 
 There are **no automatic retries anywhere in the system**. A metered API is not

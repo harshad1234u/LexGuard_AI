@@ -306,23 +306,28 @@ Uploaded document content is untrusted data. Defences, in layers:
 
 ## 12. Deployment
 
-`backend/Dockerfile` exists. There is **no CI configuration, no frontend
-Dockerfile and no deployment manifest** in this repository; running it is the
-documented local procedure in the root `README.md`.
-
-Intended MVP shape, not yet provisioned:
+Prepared in Phase 23, **not deployed**. Full detail in `docs/12_DEPLOYMENT.md`.
 
 ```text
-Frontend → static host
-Backend  → container host
-LLM      → NVIDIA hosted API
+Frontend → Vercel (static Vite build; only VITE_API_BASE_URL)
+Backend  → Render (Docker, exactly one instance: state is in process memory)
+LLMs     → Gemini API (analysis, Q&A) · NVIDIA API (reasoning notes)
+Database → Supabase, optional: metadata + released findings only, backend-only
+```
+
+The analysis workflow after Phase 23:
+
+```text
+validate → ingest → coverage_gate → document_map → model[ANALYSIS_PROVIDER]
+        → verify → output_gate                      (release decided here)
+        → reason[REASONING_PROVIDER] → reason_gate  (notes only; cannot touch findings)
 ```
 
 ## 13. Architecture decision records
 
 Full reasoning and the Phase 10–15 decisions are in `docs/09_DECISIONS.md`.
 
-### ADR-001 — Nemotron as primary model — *in effect*
+### ADR-001 — Nemotron as primary model — *superseded by ADR-007 (Phase 23)*
 
 Multimodal document intelligence positioning, OCR capability, reasoning, long
 context, hosted API availability. Caveat: vendor benchmarks do not prove
@@ -345,9 +350,13 @@ single release boundary covering every model-supplied field.
 Single-document understanding does not need retrieval infrastructure, which
 would add retrieval failure modes.
 
-### ADR-005 — Ephemeral document processing — *in effect*
+### ADR-005 — Ephemeral document processing — *in effect, amended Phase 23*
 
 No permanent storage of uploaded legal documents, minimising privacy exposure.
+Amendment: optional, backend-only metadata persistence (Supabase) may store
+document metadata and **released** findings; PDFs, page text, raw filenames,
+questions, answers and withheld output are never stored. See
+`docs/09_DECISIONS.md`.
 
 ### ADR-006 — One release boundary (Phase 15) — *in effect*
 
@@ -356,3 +365,19 @@ survived three phases. `app/verification/policy.py` is the single place where
 "may this reach a user" is decided, and `build_result` may render only what it
 produced. Enforced structurally: replace a control and the endpoint's response
 must change.
+
+### ADR-007 — Provider roles, no fallback (Phase 23) — *in effect*
+
+Analysis and Q&A default to Gemini; reasoning notes use Nemotron. Each role is
+configured separately and calls only its configured provider. A missing key is
+a clean `not configured`, never a silent switch of vendor. Provenance records
+the provider actually used.
+
+### ADR-008 — Reasoning notes are not verification (Phase 23) — *in effect*
+
+A second model reasoning over released findings is useful to a reader and
+dangerous as an authority. Notes run after the release gate, see only released
+findings, are gated for scope (ids, quotes, figures, instructions, legal
+conclusions) and carry a fixed "not independently verified" label. They never
+change a finding. This is not the "second LLM verifier" refused in
+`docs/11_PROMPTWARS_ALIGNMENT.md` §5: nothing it says decides a release.

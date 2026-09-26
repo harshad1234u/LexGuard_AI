@@ -5,12 +5,19 @@ import type {
   AskResponse,
   FindingsResponse,
   ExtractionResponse,
+  LanguageCode,
   StatusResponse,
   UploadResponse,
   ValuesResponse,
 } from '../types/api'
 
-const BASE = '/api/v1'
+/**
+ * Where the API lives. Empty in development (Vite proxies `/api`); set to the
+ * backend origin in a production build, e.g. `https://lexguard-api.onrender.com`.
+ * The only build-time variable the frontend reads, and never a secret.
+ */
+const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
+const BASE = `${API_ORIGIN}/api/v1`
 
 /** An error the backend described explicitly, carrying its stable code. */
 export class ApiError extends Error {
@@ -117,10 +124,24 @@ export async function deleteDocument(documentId: string): Promise<void> {
 }
 
 /** Start an analysis. Returns immediately; the model runs in the background. */
-export async function startAnalysis(documentId: string): Promise<AnalyzeResponse> {
-  const response = await request(`${BASE}/documents/${encodeURIComponent(documentId)}/analyze`, {
-    method: 'POST',
-  })
+export async function startAnalysis(
+  documentId: string,
+  language: LanguageCode = 'en',
+): Promise<AnalyzeResponse> {
+  // English sends no body at all, exactly as before; the backend treats a
+  // missing body as English.
+  const init: RequestInit =
+    language === 'en'
+      ? { method: 'POST' }
+      : {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ language }),
+        }
+  const response = await request(
+    `${BASE}/documents/${encodeURIComponent(documentId)}/analyze`,
+    init,
+  )
   return (await response.json()) as AnalyzeResponse
 }
 
@@ -144,11 +165,12 @@ export async function askDocument(
   documentId: string,
   question: string,
   signal?: AbortSignal,
+  language: LanguageCode = 'en',
 ): Promise<AskResponse> {
   const response = await request(`${BASE}/documents/${encodeURIComponent(documentId)}/ask`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question }),
+    body: JSON.stringify(language === 'en' ? { question } : { question, language }),
     signal,
   })
   return (await response.json()) as AskResponse

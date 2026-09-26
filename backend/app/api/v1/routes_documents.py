@@ -23,6 +23,7 @@ from app.agents.runner import analysis_runner
 from app.core.errors import ConflictError, ErrorCode, PayloadTooLargeError
 from app.documents.ingestion import ingest_document
 from app.documents.manifest import DocumentManifest
+from app.persistence import get_repository
 from app.documents.storage import document_store
 from app.documents.validation import validate_upload
 from app.documents.values import index_values
@@ -184,4 +185,6 @@ def delete_document(document_id: str) -> Response:
     # The analysis describes a document that will no longer exist.
     analysis_runner.forget_document(document_id)
     document_store.delete(document_id)
+    # Delete-on-discard reaches persisted metadata too (a no-op when disabled).
+    get_repository().delete_document(document_id)
     return Response(status_code=204)

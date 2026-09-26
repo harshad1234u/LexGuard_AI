@@ -21,6 +21,7 @@ from __future__ import annotations
 from app.core.logging import get_logger
 from app.schemas.findings import (
     Finding,
+    LanguageCode,
     ModelAnswer,
     VerificationStatus,
     VerifiedFinding,
@@ -32,7 +33,7 @@ from app.schemas.qa import (
     AskResponse,
 )
 from app.verification.grounding import EvidenceSource, all_text, verify_finding
-from app.verification.policy import confirm_section
+from app.verification.policy import confirm_section, translation_decision
 from app.verification.semantics import (
     ClaimStatus,
     check_answer,
@@ -108,6 +109,7 @@ def gate_answer(
     answer: ModelAnswer,
     verified: list[VerifiedFinding],
     document: EvidenceSource,
+    language: LanguageCode = LanguageCode.EN,
 ) -> AskResponse:
     """Decide what the user is allowed to see.
 
@@ -240,6 +242,21 @@ def gate_answer(
             if item.finding.evidence is not None
         ]
 
+    # --- Translation (Phase 23) ----------------------------------------------
+    # Only beside an answer that held up in full: a translation of an answer
+    # that lost a sentence could still carry the sentence that was dropped.
+    translation = None
+    if (
+        language != LanguageCode.EN
+        and status is AnswerStatus.SUPPORTED
+        and not dropped_claims
+    ):
+        translation = translation_decision(
+            answer.answer_translation,
+            original_passed=True,
+            context=" ".join(contexts),
+        )
+
     # Metadata only: no question text, no answer text, no quotes, no claims.
     logger.info(
         "qa answered document_id=%s question_chars=%d proposed=%d shown=%d "
@@ -264,4 +281,6 @@ def gate_answer(
         withheld_evidence=withheld,
         claims_checked=len(claims),
         claims_withheld=0 if status is AnswerStatus.NOT_FOUND else dropped_claims,
+        answer_translation=translation,
+        answer_translation_language=LanguageCode(language) if translation else None,
     )

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ApiError, askDocument } from '../services/api'
-import type { AskResponse } from '../types/api'
+import type { AskResponse, LanguageCode } from '../types/api'
 
 interface AskState {
   /** Which document this state belongs to, so a stale answer is never shown. */
@@ -39,7 +39,7 @@ export function useAsk(documentId: string | null) {
   }, [documentId])
 
   const ask = useCallback(
-    async (question: string) => {
+    async (question: string, language: LanguageCode = 'en') => {
       if (!documentId || !question.trim()) return
 
       // A second question supersedes the first rather than racing it.
@@ -52,7 +52,7 @@ export function useAsk(documentId: string | null) {
       setState({ ownerId: documentId, answer: null, error: null, asking: true })
 
       try {
-        const answer = await askDocument(documentId, question.trim(), request.signal)
+        const answer = await askDocument(documentId, question.trim(), request.signal, language)
         if (!live()) return
         setState({ ownerId: documentId, answer, error: null, asking: false })
       } catch (cause) {

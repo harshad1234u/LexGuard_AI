@@ -2,10 +2,12 @@ import { useState } from 'react'
 
 import { useAsk } from '../../hooks/useAsk'
 import type { Phase } from '../../lib/phase'
+import type { LanguageCode } from '../../types/api'
 import type { WorkspaceTab } from '../../lib/tabs'
 import { Button } from '../ui/Button'
 import { EmptyState } from '../ui/EmptyState'
 import { Icon } from '../ui/Icon'
+import { LanguageSelect } from '../ui/LanguageSelect'
 import { ErrorState } from '../ui/StatusBanner'
 import { AnswerCard } from './AnswerCard'
 
@@ -79,10 +81,11 @@ function Guidance() {
  */
 export function AskDocumentView({ documentId, eligible, phase, analysisComplete, onGoTo }: Props) {
   const [question, setQuestion] = useState('')
+  const [language, setLanguage] = useState<LanguageCode>('en')
   const { ask, answer, error, asking } = useAsk(documentId)
 
   const submit = () => {
-    if (!asking && question.trim()) void ask(question)
+    if (!asking && question.trim()) void ask(question, language)
   }
 
   return (
@@ -152,6 +155,15 @@ export function AskDocumentView({ documentId, eligible, phase, analysisComplete,
                     'Ask'
                   )}
                 </Button>
+              </div>
+              <div className="mt-2">
+                <LanguageSelect
+                  id="ask-language"
+                  label="Answer language"
+                  value={language}
+                  onChange={setLanguage}
+                  disabled={asking}
+                />
               </div>
 
               {!answer && !asking && !error && (

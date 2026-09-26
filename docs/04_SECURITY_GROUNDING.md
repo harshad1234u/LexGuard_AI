@@ -489,6 +489,19 @@ neither separates them from legitimate paraphrase at any threshold. Kept red in
 the test suite so a future fix must be acknowledged. See §7b and
 `PHASE_15_REPORT.md` §7.
 
+### Phase 23 controls
+
+| Risk | Control | Test |
+|---|---|---|
+| Settings validation error printing a truncated API key into logs | `hide_input_in_errors=True`; secrets `repr=False` | `test_phase23_config` |
+| Silent switch of vendor when a key is missing | Role factories build only the configured provider | `TestFactoriesNeverFallBack` |
+| Gemini output bypassing verification | Same unchanged verifier and gate; five adversarial classes withheld end to end | `TestNoGeminiOutputBypassesVerification` |
+| A reasoning model mutating, adding or "verifying" findings | Runs after the gate on released findings only; notes gated; fixed label; no status field | `test_phase23_reasoning` |
+| Translation carrying a claim the checks cannot read | Translation is additive, only beside fully passed text, numerals bound to evidence, labelled | `test_phase23_multilingual` |
+| Reasoning pushing a finished analysis into the whole-run timeout | Deadline in state; skip below 10 s; call capped by remaining budget | `TestStatuses` |
+| Private content reaching the database | Gated input types only; no column exists for it; RLS with zero policies; schema probe | `test_phase23_persistence` |
+| A key in the frontend bundle | Bundle scan in the Vercel build; source reads only `VITE_API_BASE_URL` | `check-bundle.mjs`, `test_phase23_deployment` |
+
 ### Deferred
 
 | Item | Reason |

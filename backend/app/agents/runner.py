@@ -27,7 +27,9 @@ from app.agents.state import AnalysisState
 from app.core.config import get_settings
 from app.core.errors import ConflictError, ErrorCode, NotFoundError
 from app.core.logging import get_logger
-from app.models import get_model_provider
+from app.models import get_model_provider, get_reasoning_provider
+from app.models.transport import ProviderFailureKind
+from app.persistence import get_repository, persist_document
 from app.models.provider import ModelProvider
 from app.schemas.analysis import (
     AnalysisResult,
@@ -37,6 +39,8 @@ from app.schemas.analysis import (
     ErrorCategory,
     TERMINAL_STATUSES,
 )
+from app.schemas.findings import LanguageCode
+from app.schemas.provenance import provider_identity
 
 logger = get_logger(__name__)
 
@@ -66,6 +70,7 @@ class AnalysisJob(BaseModel):
 
     analysis_id: str
     document_id: str
+    language: LanguageCode = LanguageCode.EN
     status: AnalysisStatus = AnalysisStatus.QUEUED
     stage: AnalysisStage = AnalysisStage.QUEUED
     created_at: datetime
@@ -78,6 +83,9 @@ class AnalysisJob(BaseModel):
     withheld_count: int | None = None
     error_category: ErrorCategory | None = None
     error_message: str | None = None
+    failure_kind: str | None = Field(
+        default=None, description="Internal ProviderFailureKind. Never returned by the API."
+    )
     result: AnalysisResult | None = Field(
         default=None,
         description="Set only once the output gate has run.",
@@ -142,6 +150,7 @@ class AnalysisRunner:
         document_id: str,
         *,
         provider: ModelProvider | None = None,
+        language: LanguageCode = LanguageCode.EN,
     ) -> tuple[AnalysisJob, bool]:
         """Start an analysis, or return the existing one.
 
@@ -163,13 +172,28 @@ class AnalysisRunner:
         job = AnalysisJob(
             analysis_id=f"an_{secrets.token_hex(10)}",
             document_id=document_id,
+            language=LanguageCode(language),
             created_at=_now(),
         )
 
+        # Phase 23: the language is part of what an analysis is. The same
+        # language reuses as before; another language while one is in flight
+        # is refused (two runs would race for the document's result); another
+        # language after completion is a new, explicitly requested run.
         with self._lock:
             active_id = self._by_document.get(document_id)
             existing = self._jobs.get(active_id) if active_id else None
-            if existing is not None and existing.status is not AnalysisStatus.FAILED:
+            if existing is not None and existing.language != job.language and existing.is_active:
+                raise ConflictError(
+                    ErrorCode.ANALYSIS_IN_PROGRESS,
+                    "An analysis in another language is already running for this document.",
+                    details={"analysis_id": existing.analysis_id},
+                )
+            if (
+                existing is not None
+                and existing.status is not AnalysisStatus.FAILED
+                and existing.language == job.language
+            ):
                 claimed = None
             else:
                 self._jobs[job.analysis_id] = job
@@ -255,12 +279,18 @@ class AnalysisRunner:
         This is reporting only. Nothing routes on `job.stage`, and a run that
         ended - failed or gated - advances no further.
         """
+        settings = get_settings()
+        name, model = provider_identity(provider)
         state: AnalysisState = {}
-        stream = build_graph(provider).astream(
+        stream = build_graph(provider, get_reasoning_provider()).astream(
             AnalysisState(
                 analysis_id=job.analysis_id,
                 document_id=job.document_id,
                 stage=AnalysisStage.QUEUED,
+                language=job.language,
+                provider_name=name,
+                provider_model=model,
+                deadline=time.monotonic() + settings.analysis_timeout_seconds,
             ),
             stream_mode="values",
         )
@@ -290,6 +320,7 @@ class AnalysisRunner:
             job.status = AnalysisStatus.FAILED
             job.error_category = state["error_category"]
             job.error_message = state.get("error_message")
+            job.failure_kind = state.get("provider_failure_kind")
         elif job.stage is not AnalysisStage.DONE:
             # Defensive: a run that ended without failing and without gating.
             job.status = AnalysisStatus.FAILED
@@ -301,6 +332,8 @@ class AnalysisRunner:
             job.proposed_count = job.result.proposed_count
             job.verified_count = len(job.result.findings)
             job.withheld_count = job.result.withheld.total
+
+        self._persist(job)
 
         logger.info(
             "analysis finished analysis_id=%s document_id=%s status=%s stage=%s "
@@ -325,6 +358,9 @@ class AnalysisRunner:
         job.error_message = message
         job.duration_ms = int((time.perf_counter() - started) * 1000)
         job.completed_at = _now()
+        if category is ErrorCategory.ANALYSIS_TIMEOUT:
+            job.failure_kind = str(ProviderFailureKind.TIMEOUT)
+        self._persist(job)
         logger.info(
             "analysis finished analysis_id=%s document_id=%s status=failed category=%s "
             "duration_ms=%d",
@@ -333,6 +369,28 @@ class AnalysisRunner:
             category,
             job.duration_ms,
         )
+
+    @staticmethod
+    def _persist(job: AnalysisJob) -> None:
+        """Hand the terminal job to the repository. Never raises.
+
+        Only `job.result` - the gated result - is passed. A failed job carries
+        no result, so nothing a model proposed can be stored from here.
+        """
+        try:
+            from app.documents.storage import document_store
+
+            persist_document(document_store.get(job.document_id))
+            get_repository().record_analysis(
+                document_id=job.document_id,
+                analysis_id=job.analysis_id,
+                status=str(job.status),
+                duration_ms=job.duration_ms,
+                failure_kind=job.failure_kind,
+                result=job.result if job.status is AnalysisStatus.COMPLETED else None,
+            )
+        except Exception as exc:  # persistence must never affect the analysis
+            logger.warning("persistence failed kind=%s", type(exc).__name__)
 
     # --- Lifecycle ----------------------------------------------------------
     def forget_document(self, document_id: str) -> None:

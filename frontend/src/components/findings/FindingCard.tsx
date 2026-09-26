@@ -1,6 +1,7 @@
 import { humanise, pageRef } from '../../lib/format'
 import type { VerifiedFindingOut } from '../../types/api'
 import { Icon } from '../ui/Icon'
+import { TranslationLabel } from '../ui/LanguageSelect'
 import { VerificationBadge } from '../ui/VerificationBadge'
 
 /**
@@ -21,6 +22,16 @@ export function Explanation({ finding }: { finding: VerifiedFindingOut }) {
         Plain-language explanation
       </p>
       <p className="mt-1 text-sm leading-relaxed text-slate-700">{finding.explanation}</p>
+      {/* Only ever beside a verified explanation, and always labelled: the
+          backend checks its figures, not its meaning. */}
+      {finding.explanation_translation && (
+        <div className="mt-3 border-l-2 border-amber-300 pl-3" lang="ta">
+          <TranslationLabel />
+          <p className="mt-1 text-sm leading-relaxed text-slate-700">
+            {finding.explanation_translation}
+          </p>
+        </div>
+      )}
     </div>
   ) : (
     <div className="border-l-2 border-amber-300 pl-3">

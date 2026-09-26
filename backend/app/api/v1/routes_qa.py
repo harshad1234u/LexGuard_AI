@@ -23,7 +23,10 @@ from app.core.config import get_settings
 from app.core.logging import get_logger
 from app.documents.ingestion import ingest_document
 from app.documents.storage import DocumentRecord, document_store
-from app.models import get_model_provider
+from app.models import get_qa_provider
+from app.persistence import get_repository, persist_document
+from app.schemas.provenance import Provenance, provider_identity
+from app.verification.policy import VERIFICATION_POLICY_VERSION
 from app.models.errors import (
     ModelError,
     ModelTimeoutError,
@@ -42,7 +45,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/documents", tags=["qa"])
 
 #: Swapped in tests. Production always resolves the configured provider.
-_provider_factory = get_model_provider
+_provider_factory = get_qa_provider
 
 
 def _ensure_answerable(record: DocumentRecord) -> None:
@@ -100,7 +103,9 @@ async def ask_document(document_id: str, request: AskRequest) -> AskResponse:
 
     try:
         answer = await asyncio.wait_for(
-            provider.answer_question(QuestionRequest(payload=payload, question=question)),
+            provider.answer_question(
+                QuestionRequest(payload=payload, question=question, language=request.language)
+            ),
             timeout=settings.qa_timeout_seconds,
         )
     # Every failure below leaves through `as_question_error`, which swaps the
@@ -127,10 +132,21 @@ async def ask_document(document_id: str, request: AskRequest) -> AskResponse:
 
     # The model proposed; the application decides.
     verified = verify_answer(answer, record)
-    return gate_answer(
+    response = gate_answer(
         document_id=document_id,
         question=question,
         answer=answer,
         verified=verified,
         document=record,
+        language=request.language,
     )
+    name, model = provider_identity(provider)
+    response.provenance = Provenance(
+        provider=name,
+        model=model,
+        verification_policy_version=VERIFICATION_POLICY_VERSION,
+        status=str(response.status),
+    )
+    persist_document(record)
+    get_repository().record_answer(document_id, response, question_language=request.language)
+    return response

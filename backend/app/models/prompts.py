@@ -16,6 +16,7 @@ behaviour harmless.
 from __future__ import annotations
 
 from app.models.payload import DocumentPayload
+from app.schemas.findings import LanguageCode
 
 SYSTEM_PROMPT = """\
 You are a legal document analysis assistant. You read a document supplied by \
@@ -63,7 +64,7 @@ word exists. You provide legal information, not legal advice.
 """
 
 ANALYSIS_INSTRUCTIONS = """\
-Identify the significant clauses in the document. For each one, return an entry with:
+Identify the most significant clauses in the document (up to 12 key provisions). For each one, return an entry with:
 
 - "type": a short lowercase category, such as parties, term, termination, \
 payment, fees, renewal, confidentiality, liability, indemnity, governing_law, \
@@ -74,7 +75,7 @@ dispute_resolution.
 - "explanation": two or three sentences explaining it to a non-lawyer.
 - "attention": "info", "review" or "high" - how much the reader should scrutinise it.
 
-Return ONLY a JSON object of this shape, with no commentary before or after:
+Return ONLY a JSON object of this shape, starting directly with {"findings": [, with no commentary before or after:
 
 {"findings": [ ... ]}
 
@@ -84,22 +85,64 @@ If the document supports no findings, return {"findings": []}.
 QUESTION_INSTRUCTIONS = """\
 Answer the question using ONLY the document content supplied above.
 
+State your answer in complete grammatical sentence(s) (never return an isolated number or bare fragment). Faithfully preserve any conditions, exceptions, and negative phrasing (such as "shall not exceed", "subject to", or "except for") exactly as expressed in the cited text.
+
+Always cite quotes from the operative numbered sections of the agreement (e.g. Section 6, Section 15, Section 19, etc.) rather than introductory summary recitals or document control headers.
+
 If the document does not contain the answer, say so plainly and set \
 "not_found" to true. A clear "not found" is correct and expected; a guess is \
 not. Do not answer from general legal knowledge.
 
-Return ONLY a JSON object of this shape, with no commentary before or after:
+Return ONLY a JSON object of this shape, starting directly with {"answer":, with no commentary before or after:
 
-{"answer": "<plain-language answer>",
- "evidence": [{"page": <page number>, "section": null, "quote": "<exact text>"}],
+{"answer": "<plain-language answer in complete sentence(s)>",
+ "evidence": [{"page": <page number>, "section": null, "quote": "<exact text copied character-for-character from that page>"}],
  "not_found": false}
 """
 
 
-def build_analysis_prompt(payload: DocumentPayload) -> str:
+#: Language names as written into a prompt.
+_LANGUAGE_NAMES = {LanguageCode.TA: "Tamil"}
+
+ANALYSIS_TRANSLATION_INSTRUCTIONS = """\
+The reader has asked for explanations in {language}. Keep "claim", "explanation" \
+and every "quote" exactly as specified above, in the language the document is \
+written in - they are checked against the document automatically. In addition, \
+add to each finding:
+
+- "explanation_translation": the same explanation written in {language}. \
+Translate only; do not add, remove or soften anything. Keep every number, \
+amount, percentage, duration and date exactly as the document writes it. \
+Preserve whether something must, may or must not happen, who must do it, and \
+any condition on it.
+"""
+
+QUESTION_TRANSLATION_INSTRUCTIONS = """\
+The reader has asked for the answer in {language}. Write "answer" in the \
+language the document is written in, exactly as specified above - it is checked \
+against the document automatically. Also include "answer_translation": the same \
+answer in {language}, translating only, with every number, amount, duration and \
+date kept exactly as the document writes it.
+"""
+
+
+def _translation_block(template: str, language: LanguageCode) -> str:
+    """The extra instruction for a non-English reader, or nothing for English.
+
+    English adds no text at all, so an English prompt is byte-for-byte what it
+    was before Phase 23.
+    """
+    name = _LANGUAGE_NAMES.get(LanguageCode(language))
+    return f"\n{template.format(language=name)}" if name else ""
+
+
+def build_analysis_prompt(
+    payload: DocumentPayload, language: LanguageCode = LanguageCode.EN
+) -> str:
     """User-turn content for a document analysis request."""
     return (
-        f"{ANALYSIS_INSTRUCTIONS}\n"
+        f"{ANALYSIS_INSTRUCTIONS}"
+        f"{_translation_block(ANALYSIS_TRANSLATION_INSTRUCTIONS, language)}\n"
         f"The following pages are the complete content supplied to you. "
         f"Pages supplied: {payload.supplied_page_numbers}.\n\n"
         "--- BEGIN UNTRUSTED DOCUMENT CONTENT ---\n"
@@ -108,7 +151,9 @@ def build_analysis_prompt(payload: DocumentPayload) -> str:
     )
 
 
-def build_question_prompt(payload: DocumentPayload, question: str) -> str:
+def build_question_prompt(
+    payload: DocumentPayload, question: str, language: LanguageCode = LanguageCode.EN
+) -> str:
     """User-turn content for a document-grounded question.
 
     The question is placed after the document and labelled, so a document that
@@ -118,6 +163,7 @@ def build_question_prompt(payload: DocumentPayload, question: str) -> str:
         "--- BEGIN UNTRUSTED DOCUMENT CONTENT ---\n"
         f"{payload.render()}\n"
         "--- END UNTRUSTED DOCUMENT CONTENT ---\n\n"
-        f"{QUESTION_INSTRUCTIONS}\n"
+        f"{QUESTION_INSTRUCTIONS}"
+        f"{_translation_block(QUESTION_TRANSLATION_INSTRUCTIONS, language)}\n"
         f"The user's question is:\n{question.strip()}\n"
     )

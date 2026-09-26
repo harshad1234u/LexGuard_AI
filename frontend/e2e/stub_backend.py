@@ -30,6 +30,10 @@ choosing which file to upload:
     novalues.pdf          fully processed, but no values detected
     notext.pdf            fully processed, but no text could be read
     recovers.pdf          the analysis fails once, then succeeds on retry
+    reasoning.pdf         two findings, provenance, one reasoning note (one withheld)
+    reasoning-failed.pdf  two findings; the reasoning stage failed
+    tamil.pdf             Tamil translations beside checked English text
+    gemini-missing.pdf    the analysis fails: the analysis provider has no key
     notes.txt             rejected at upload
 
 Nothing here is imported by the application. It is a test double.
@@ -325,6 +329,25 @@ async def analysis_status(analysis_id: str):
     elif scenario.startswith("recovers-"):
         scenario = "recovers"
 
+    if scenario == "gemini-missing":
+        return {
+            "analysis_id": analysis_id,
+            "document_id": f"doc_{scenario}",
+            "status": "failed",
+            "stage": "analyzing",
+            "created_at": "2026-09-20T12:00:00Z",
+            "started_at": "2026-09-20T12:00:01Z",
+            "completed_at": "2026-09-20T12:00:02Z",
+            "duration_ms": 900,
+            "coverage": COVERAGE_SUMMARY,
+            "proposed_count": None,
+            "verified_count": None,
+            "withheld_count": None,
+            "error_category": "provider_not_configured",
+            # SAFE_MESSAGES[ModelNotConfiguredError] in backend/app/models/errors.py
+            "error_message": "Document analysis is not available: the service is not configured.",
+        }
+
     if scenario == "provider-failure":
         return {
             "analysis_id": analysis_id,
@@ -475,10 +498,97 @@ def _overview(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# --- Phase 23 fixtures ---------------------------------------------------------
+
+POLICY_VERSION = "2026-09-23.phase23"
+#: Mirrors `REASONING_NOTE_LABEL` in backend/app/schemas/analysis.py.
+REASONING_NOTE_LABEL = "Reasoning note \u2014 not independently verified"
+TAMIL_EXPLANATION = "இரு தரப்பினரும் 30 நாட்கள் எழுத்துமூல அறிவிப்புடன் ஒப்பந்தத்தை முடிக்கலாம்."
+TAMIL_ANSWER = "இரு தரப்பினரும் 30 நாட்கள் எழுத்துமூல அறிவிப்புடன் முடிக்கலாம்."
+
+FEES_FINDING = {
+    "id": "f_002",
+    "type": "payment",
+    "claim": "The Client shall pay GBP 5,000 per month.",
+    "evidence": {"page": 3, "quote": "The Client shall pay GBP 5,000 per month.", "section": None},
+    "explanation": "",
+    "attention": "review",
+    "explanation_verified": False,
+    "verification_status": "verified",
+}
+
+
+def _provenance(reasoning_provider):
+    return {
+        "provider": "gemini",
+        "model": "gemini-3.8-flash",
+        "reasoning_provider": reasoning_provider,
+        "reasoning_model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning" if reasoning_provider else None,
+        "verification_policy_version": POLICY_VERSION,
+        "status": "completed",
+    }
+
+
+def _two_findings(reasoning):
+    return {
+        "findings": [VERIFIED_FINDING, FEES_FINDING],
+        "withheld": {"total": 0, "rejected": 0, "unverified": 0, "partially_verified": 0},
+        "proposed_count": 2,
+        "insufficient_evidence": False,
+        "coverage": COVERAGE_SUMMARY,
+        "language": "en",
+        "provenance": _provenance("nemotron"),
+        "reasoning": reasoning,
+    }
+
+
+PHASE23_RESULTS = {
+    "reasoning": lambda: _two_findings({
+        "status": "completed",
+        "failure_kind": None,
+        "provider": "nemotron",
+        "notes": [{
+            "id": "n_001",
+            "category": "dependency",
+            "text": "The 30 days' notice period and the monthly fee should be read together: "
+                    "fees may continue to fall due during the notice period.",
+            "finding_ids": ["f_001", "f_002"],
+            "quotes": ["Either party may terminate this agreement by providing 30 days' written notice."],
+            "evidence_checked": True,
+            "label": REASONING_NOTE_LABEL,
+        }],
+        "withheld_count": 1,
+    }),
+    "reasoning-failed": lambda: _two_findings({
+        "status": "failed",
+        "failure_kind": "capacity",
+        "provider": "nemotron",
+        "notes": [],
+        "withheld_count": 0,
+    }),
+    "tamil": lambda: {
+        "findings": [{
+            **VERIFIED_FINDING,
+            "explanation_translation": TAMIL_EXPLANATION,
+            "explanation_translation_language": "ta",
+        }],
+        "withheld": {"total": 0, "rejected": 0, "unverified": 0, "partially_verified": 0},
+        "proposed_count": 1,
+        "insufficient_evidence": False,
+        "coverage": COVERAGE_SUMMARY,
+        "language": "ta",
+        "provenance": _provenance(None),
+        "reasoning": {"status": "disabled", "failure_kind": None, "provider": None,
+                      "notes": [], "withheld_count": 0},
+    },
+}
+
 @app.get("/api/v1/documents/{document_id}/findings")
 async def findings(document_id: str):
     scenario = SCENARIOS.get(document_id, "verified")
-    if scenario == "interpretation":
+    if scenario in PHASE23_RESULTS:
+        result = PHASE23_RESULTS[scenario]()
+    elif scenario == "interpretation":
         result = {
             "findings": [INTERPRETED_FINDING],
             "withheld": {"total": 0, "rejected": 0, "unverified": 0, "partially_verified": 0},
@@ -551,6 +661,8 @@ async def ask(document_id: str, request: Request):
     if down:
         return error("model_unavailable", QA_UNAVAILABLE, 503, reason="provider_capacity")
 
+    language = body.get("language", "en")
+
     if scenario == "notfound" or "governing law" in question.lower():
         return {
             "document_id": document_id,
@@ -581,6 +693,18 @@ async def ask(document_id: str, request: Request):
         "withheld_evidence": 0,
         "claims_checked": 1,
         "claims_withheld": 0,
+        # Mirrors `gate_answer`: a translation only for a non-English reader,
+        # only beside a fully supported answer.
+        "answer_translation": TAMIL_ANSWER if language == "ta" else None,
+        "answer_translation_language": "ta" if language == "ta" else None,
+        "provenance": {
+            "provider": "gemini",
+            "model": "gemini-3.8-flash",
+            "reasoning_provider": None,
+            "reasoning_model": None,
+            "verification_policy_version": POLICY_VERSION,
+            "status": "supported",
+        },
         "disclaimer": DISCLAIMER,
     }
 

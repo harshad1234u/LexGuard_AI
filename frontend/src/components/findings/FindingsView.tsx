@@ -11,6 +11,8 @@ import { Sheet } from '../ui/Sheet'
 import { StatusBanner } from '../ui/StatusBanner'
 import { EvidenceInspector, InspectorBody } from './EvidenceInspector'
 import { FindingCard } from './FindingCard'
+import { ProvenanceStrip } from './ProvenanceStrip'
+import { ReasoningNotes } from './ReasoningNotes'
 import { WithheldSummary } from './WithheldSummary'
 
 interface Props {
@@ -36,6 +38,11 @@ function ViewHeader({ result }: { result: AnalysisResult | null }) {
           Statements the model proposed about this document that the application verified against
           its text, each shown with the quotation it rests on.
         </p>
+        {result && (
+          <div className="mt-2">
+            <ProvenanceStrip provenance={result.provenance} reasoning={result.reasoning} />
+          </div>
+        )}
       </div>
       {result && (
         <dl className="flex gap-2 font-mono text-xs">
@@ -172,6 +179,8 @@ export function FindingsView({ phase, result, selectedId, onSelect, onGoTo }: Pr
           </div>
 
           <WithheldSummary result={result} />
+
+          <ReasoningNotes reasoning={result.reasoning} onInspect={inspect} />
 
           <p className="text-xs leading-relaxed text-slate-500">
             Showing {findings.length} of {result.proposed_count} proposed{' '}

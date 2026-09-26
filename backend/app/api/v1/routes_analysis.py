@@ -19,6 +19,7 @@ from app.documents.storage import document_store
 from app.schemas.analysis import (
     AnalysisStatus,
     AnalysisStatusResponse,
+    AnalyzeRequest,
     AnalyzeResponse,
     FindingsResponse,
 )
@@ -48,7 +49,9 @@ def _status_payload(job: AnalysisJob) -> AnalysisStatusResponse:
 
 
 @documents_router.post("/{document_id}/analyze", response_model=AnalyzeResponse)
-async def start_analysis(document_id: str, response: Response) -> AnalyzeResponse:
+async def start_analysis(
+    document_id: str, response: Response, request: AnalyzeRequest | None = None
+) -> AnalyzeResponse:
     """Start an analysis, or hand back the one already under way.
 
     202 while work is outstanding, 200 when an existing completed analysis is
@@ -57,7 +60,8 @@ async def start_analysis(document_id: str, response: Response) -> AnalyzeRespons
     """
     document_store.get(document_id)  # 404 if unknown or expired
 
-    job, reused = analysis_runner.submit(document_id)
+    language = request.language if request is not None else AnalyzeRequest().language
+    job, reused = analysis_runner.submit(document_id, language=language)
 
     response.status_code = 200 if job.status is AnalysisStatus.COMPLETED else 202
     return AnalyzeResponse(

@@ -10,6 +10,24 @@ router = APIRouter(tags=["health"])
 VERSION = "0.2.0"
 
 
+@router.get("/ready")
+def ready() -> dict:
+    """Per-role readiness. Booleans and provider names only - never a key."""
+    from app.persistence import get_repository
+
+    settings = get_settings()
+    return {
+        "status": "ok",
+        "providers": {
+            "analysis": settings.analysis_provider,
+            "qa": settings.qa_provider,
+            "reasoning": settings.reasoning_provider if settings.reasoning_effective else "none",
+        },
+        "configured": settings.provider_readiness(),
+        "persistence_enabled": bool(get_repository().enabled),
+    }
+
+
 @router.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     settings = get_settings()

@@ -530,6 +530,11 @@ class TestTheEndpointPublishesOnlyReleasedContent:
             "proposed_count",
             "insufficient_evidence",
             "coverage",
+            # Phase 23 additions, approved as additive and optional. Still an
+            # exact set: any further field must be added here deliberately.
+            "language",
+            "provenance",
+            "reasoning",
         }
 
     def test_an_incomplete_document_cannot_expose_an_overview(self, client, use_provider):

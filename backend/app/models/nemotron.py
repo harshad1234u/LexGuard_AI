@@ -12,10 +12,8 @@ before that text goes anywhere.
 from __future__ import annotations
 
 import asyncio
-import re
 import time
 import warnings
-from dataclasses import dataclass
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
@@ -44,12 +42,26 @@ from app.models.provider import (
     parse_analysis,
     parse_answer,
 )
+from app.models.reasoning import (
+    REASONING_SYSTEM_PROMPT,
+    ModelReasoning,
+    ReasoningProvider,
+    ReasoningRequest,
+    build_reasoning_prompt,
+    parse_reasoning,
+)
+from app.models.transport import (
+    ProviderDiagnosis,
+    diagnose_message,
+    log_call,
+    status_from_message,
+)
 from app.schemas.findings import ModelAnalysis, ModelAnswer
 
 logger = get_logger(__name__)
 
 
-class NemotronProvider(ModelProvider):
+class NemotronProvider(ModelProvider, ReasoningProvider):
     """Calls Nemotron through LangChain's NVIDIA integration."""
 
     name = "nemotron"
@@ -115,7 +127,7 @@ class NemotronProvider(ModelProvider):
     # --- Requests ---------------------------------------------------------
     async def analyze_document(self, request: AnalysisRequest) -> ModelAnalysis:
         raw = await self._invoke(
-            build_analysis_prompt(request.payload),
+            build_analysis_prompt(request.payload, language=request.language),
             operation="analyze",
             payload=request.payload,
         )
@@ -123,14 +135,33 @@ class NemotronProvider(ModelProvider):
 
     async def answer_question(self, request: QuestionRequest) -> ModelAnswer:
         raw = await self._invoke(
-            build_question_prompt(request.payload, request.question),
+            build_question_prompt(request.payload, request.question, language=request.language),
             operation="ask",
             payload=request.payload,
         )
         return parse_answer(raw)
 
+    async def reason_about_findings(self, request: ReasoningRequest) -> ModelReasoning:
+        """Phase 23 reasoning notes over released findings. Proposals only."""
+        raw = await self._invoke(
+            build_reasoning_prompt(request),
+            operation="reason",
+            payload=None,
+            system_prompt=REASONING_SYSTEM_PROMPT,
+            timeout=self._settings.reasoning_timeout_seconds,
+        )
+        return parse_reasoning(raw)
+
     # --- Transport --------------------------------------------------------
-    async def _invoke(self, user_prompt: str, *, operation: str, payload: DocumentPayload) -> str:
+    async def _invoke(
+        self,
+        user_prompt: str,
+        *,
+        operation: str,
+        payload: DocumentPayload | None,
+        system_prompt: str = SYSTEM_PROMPT,
+        timeout: int | None = None,
+    ) -> str:
         """One request, with a timeout and no automatic retry.
 
         Retries are deliberately absent. A failed analysis is cheap to ask for
@@ -138,7 +169,7 @@ class NemotronProvider(ModelProvider):
         one rate-limit into several (docs/03_AI_AGENT_SPEC.md sec. 8).
         """
         messages = [
-            ("system", SYSTEM_PROMPT),
+            ("system", system_prompt),
             ("human", user_prompt),
         ]
 
@@ -149,18 +180,23 @@ class NemotronProvider(ModelProvider):
             raise make_error(ModelNotConfiguredError)
 
         started = time.perf_counter()
+        built = self._client is not None
         try:
             # One deadline covers building the client and calling it. Building
             # is not free: the integration lists the hosted models over a
             # blocking HTTP request with no socket timeout, and run on the
             # event loop that request froze the whole server - both timeouts
             # included - for as long as the upstream held it (Phase 22).
-            async with asyncio.timeout(self._settings.model_timeout_seconds):
+            async with asyncio.timeout(timeout or self._settings.model_timeout_seconds):
                 client = await self._resolve_client()
+                built = True
                 response = await client.ainvoke(messages)
         except TimeoutError as exc:
-            self._log(operation, payload, started, "timeout")
-            raise make_error(ModelTimeoutError, detail="timeout") from exc
+            # Which half of the shared deadline ran out: a client that was never
+            # built is the Phase 22 failure, and is worth telling apart.
+            reason = "timeout" if built else "construction_timeout"
+            self._log(operation, payload, started, "timeout", reason=reason)
+            raise make_error(ModelTimeoutError, detail=reason) from exc
         except ModelError:
             # Already one of ours, already safe. Do not re-wrap.
             raise
@@ -203,85 +239,21 @@ class NemotronProvider(ModelProvider):
         """
         message = redact(str(exc), self._settings.nvidia_api_key).lower()
         status = getattr(getattr(exc, "response", None), "status_code", None)
-
         # The NVIDIA integration raises a bare Exception with the error body
         # interpolated into the message and no `.response` attached, so the
-        # status has to be recovered from the text.
-        if status is None:
-            status = _status_from_message(message)
+        # status is recovered from the text inside `diagnose_message`.
+        return diagnose_message(message, status)
 
-        def found(error: type, reason: str) -> ProviderDiagnosis:
-            return ProviderDiagnosis(error=error, reason=reason, status=status)
-
-        # Shared-endpoint capacity limits arrive as "ResourceExhausted" with a
-        # 503. Transient and retryable by the user, not a misconfiguration.
-        if "resourceexhausted" in message or "request limit reached" in message:
-            return found(ModelUnavailableError, "provider_capacity")
-
-        if status == 401 or status == 403 or "unauthor" in message or "forbidden" in message:
-            return found(ModelAuthError, "authentication_rejected")
-        if status == 404 or "not found" in message or "unknown model" in message:
-            return found(ModelNotFoundError, "model_not_available")
-        if status == 429 or "rate limit" in message or "too many requests" in message:
-            return found(ModelRateLimitError, "rate_limited")
-        if status is not None and 500 <= status < 600:
-            return found(ModelUnavailableError, "upstream_server_error")
-        if "service unavailable" in message:
-            return found(ModelUnavailableError, "service_unavailable")
-        if "timeout" in message or "timed out" in message:
-            return found(ModelTimeoutError, "upstream_timeout")
-        if "connect" in message or "network" in message or "resolve" in message:
-            return found(ModelUnavailableError, "network_failure")
-
-        # Nothing matched. The user-facing result stays "temporarily
-        # unavailable" - promoting an unrecognised failure to a more specific
-        # claim would be a guess - but the logs must not pretend this was a
-        # diagnosis. An `unclassified` line is how an application bug wearing a
-        # provider error's clothes becomes visible.
-        return found(ModelUnavailableError, "unclassified")
-
-    def _log(self, operation: str, payload: DocumentPayload, started: float, outcome: str, **extra):
+    def _log(
+        self, operation: str, payload: DocumentPayload | None, started: float, outcome: str, **extra
+    ):
         """Metadata only. No prompt, no document text, no key, no response body."""
-        logger.info(
-            "model call provider=%s operation=%s document_id=%s pages=%d "
-            "outcome=%s latency_ms=%d%s",
-            self.name,
-            operation,
-            payload.document_id,
-            len(payload.pages),
-            outcome,
-            int((time.perf_counter() - started) * 1000),
-            "".join(f" {k}={v}" for k, v in extra.items()),
-        )
+        log_call(__name__, self.name, operation, payload, started, outcome, **extra)
 
 
-@dataclass(frozen=True)
-class ProviderDiagnosis:
-    """Why a provider call failed, in terms safe to log.
-
-    `error` is what the caller raises and the user eventually sees. `reason`
-    and `status` exist only for operators: they are a fixed vocabulary and an
-    HTTP status, never the upstream message, which may quote the document.
-    """
-
-    error: type
-    reason: str
-    status: int | None = None
-
-
-#: Status codes as this provider embeds them in an error message, e.g.
-#: "{'code': 503}" or "[429]".
-_STATUS_IN_MESSAGE = re.compile(r"(?:'code':\s*|\"code\":\s*|\[)(\d{3})\b")
-
-
-def _status_from_message(message: str) -> int | None:
-    """Recover an HTTP status from an error message that carries no response."""
-    match = _STATUS_IN_MESSAGE.search(message)
-    if match:
-        code = int(match.group(1))
-        if 100 <= code < 600:
-            return code
-    return None
+#: Kept importable from here for existing callers.
+_status_from_message = status_from_message
+__all__ = ["NemotronProvider", "ProviderDiagnosis"]
 
 
 def _response_text(response) -> str:

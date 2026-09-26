@@ -13,7 +13,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
-from app.schemas.findings import AttentionLevel, Evidence, VerificationStatus
+from app.schemas.findings import AttentionLevel, Evidence, LanguageCode, VerificationStatus
+from app.schemas.provenance import Provenance
 
 
 class AnalysisStage(StrEnum):
@@ -126,6 +127,15 @@ class VerifiedFindingOut(BaseModel):
         ),
     )
     verification_status: VerificationStatus
+    explanation_translation: str | None = Field(
+        default=None,
+        description=(
+            "The explanation in the reader's requested language. NOT independently checked: "
+            "present only when `explanation_verified` is true and every figure in it appears "
+            "in the evidence. A client must label it as a translation."
+        ),
+    )
+    explanation_translation_language: LanguageCode | None = None
 
 
 class WithheldSummary(BaseModel):
@@ -152,6 +162,62 @@ class AnalysisResult(BaseModel):
         description="True when the model proposed findings but none survived verification.",
     )
     coverage: CoverageSummary | None = None
+    language: LanguageCode = LanguageCode.EN
+    provenance: Provenance | None = None
+    reasoning: "ReasoningResult | None" = None
+
+
+# ---------------------------------------------------------------------------
+# Reasoning notes (Phase 23)
+# ---------------------------------------------------------------------------
+
+#: Set by the application on every note. Never model-supplied, never varied.
+REASONING_NOTE_LABEL = "Reasoning note — not independently verified"
+
+
+class ReasoningStatus(StrEnum):
+    COMPLETED = "completed"
+    DISABLED = "disabled"
+    """REASONING_ENABLED=false or REASONING_PROVIDER=none."""
+    SKIPPED = "skipped"
+    """Fewer than two released findings, or too little of the analysis budget left."""
+    UNAVAILABLE = "unavailable"
+    """The reasoning provider is not configured."""
+    FAILED = "failed"
+    """The provider call failed. Findings are unaffected."""
+
+
+class ReasoningNoteOut(BaseModel):
+    """A model's observation relating released findings.
+
+    Interpretation, not a fact about the document. There is deliberately no
+    verification status here: `evidence_checked` says only that each quote is
+    real text from the findings the note cites.
+    """
+
+    id: str
+    category: str
+    text: str
+    finding_ids: list[str]
+    quotes: list[str] = Field(default_factory=list)
+    evidence_checked: bool = False
+    label: str = REASONING_NOTE_LABEL
+
+
+class ReasoningResult(BaseModel):
+    status: ReasoningStatus
+    failure_kind: str | None = Field(
+        default=None, description="A fixed ProviderFailureKind value when status is failed/unavailable."
+    )
+    provider: str | None = None
+    notes: list[ReasoningNoteOut] = Field(default_factory=list)
+    withheld_count: int = 0
+
+
+class AnalyzeRequest(BaseModel):
+    """Optional body for POST /analyze. An empty body means English."""
+
+    language: LanguageCode = LanguageCode.EN
 
 
 class AnalyzeResponse(BaseModel):
@@ -313,3 +379,6 @@ class FindingsResponse(BaseModel):
             "ignores this field loses no information and gains no risk from it."
         ),
     )
+
+
+AnalysisResult.model_rebuild()

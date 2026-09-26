@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ApiError, getAnalysisStatus, getFindings, startAnalysis } from '../services/api'
-import type { AnalysisResult, AnalysisStatusResponse, DocumentOverview } from '../types/api'
+import type { AnalysisResult, AnalysisStatusResponse, DocumentOverview, LanguageCode } from '../types/api'
 
 const POLL_INTERVAL_MS = 1500
 
@@ -89,14 +89,14 @@ export function useAnalysis(documentId: string | null) {
     }
   }, [documentId])
 
-  const run = useCallback(async (documentId: string) => {
+  const run = useCallback(async (documentId: string, language: LanguageCode) => {
     const token = ++runToken.current
     const live = () => runToken.current === token
     setState({ ...EMPTY, ownerId: documentId, starting: true })
 
     let started
     try {
-      started = await startAnalysis(documentId)
+      started = await startAnalysis(documentId, language)
     } catch (cause) {
       if (!live()) return
       setState({
@@ -200,11 +200,11 @@ export function useAnalysis(documentId: string | null) {
     }
   }, [])
 
-  const analyze = useCallback(async () => {
+  const analyze = useCallback(async (language: LanguageCode = 'en') => {
     if (!documentId || inFlight.current) return
     inFlight.current = true
     try {
-      await run(documentId)
+      await run(documentId, language)
     } finally {
       inFlight.current = false
     }

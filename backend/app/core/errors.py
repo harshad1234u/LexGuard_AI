@@ -27,6 +27,7 @@ class ErrorCode(StrEnum):
     DOCUMENT_NOT_FOUND = "document_not_found"
     DOCUMENT_EXPIRED = "document_expired"
     EXTRACTION_FAILED = "extraction_failed"
+    ANALYSIS_IN_PROGRESS = "analysis_in_progress"
 
     # --- Coverage gate (docs/04_SECURITY_GROUNDING.md sec. 12) ---
     COVERAGE_INCOMPLETE = "coverage_incomplete"
